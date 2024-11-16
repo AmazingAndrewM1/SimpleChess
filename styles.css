@@ -1,0 +1,34 @@
+body{
+    margin: 0px;
+    padding: 0px;
+}
+
+#board{
+    --board-size: min(50vw, 50vh);
+    width: var(--board-size);
+    height: var(--board-size);
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+}
+
+#board > div{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 12.5%;
+}
+
+.square{
+    width: 12.5%;
+    height: 100%;
+    outline: solid 1px black;
+}
+
+.light{
+    background-color: white;
+}
+
+.dark{
+    background-color: black;
+}
