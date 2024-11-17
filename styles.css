@@ -4,31 +4,53 @@ body{
 }
 
 #board{
-    --board-size: min(50vw, 50vh);
+    --board-size: min(75vw, 75vh);
     width: var(--board-size);
     height: var(--board-size);
     display: flex;
-    flex-direction: column;
-    gap: 0px;
-}
-
-#board > div{
-    display: flex;
     flex-direction: row;
-    width: 100%;
-    height: 12.5%;
+    flex-wrap: wrap;
+    gap: 0px;
 }
 
 .square{
     width: 12.5%;
-    height: 100%;
+    height: 12.5%;
     outline: solid 1px black;
 }
 
-.light{
+.square.light{
     background-color: white;
 }
 
-.dark{
-    background-color: black;
+.square.dark{
+    background-color: darkgray;
+}
+
+/* Link to position to top-left and top-right of container: https://techstacker.com/put-elements-bottom-container-css/ */
+.square:has(> .label){
+    position: relative;
+}
+
+.label{
+    margin: 5%;
+    position: absolute;
+}
+
+.square.light > .label{
+    color: darkgray;
+}
+
+.square.dark > .label{
+    color: white;
+}
+
+.label.row{
+    top: 0px;
+    left: 0px;
+}
+
+.label.column{
+    bottom: 0px;
+    right: 0px;
 }
