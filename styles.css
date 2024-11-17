@@ -17,6 +17,7 @@ body{
     width: 12.5%;
     height: 12.5%;
     outline: solid 1px black;
+    position: relative;
 }
 
 .square.light{
@@ -28,13 +29,10 @@ body{
 }
 
 /* Link to position to top-left and top-right of container: https://techstacker.com/put-elements-bottom-container-css/ */
-.square:has(> .label){
-    position: relative;
-}
-
 .label{
     margin: 5%;
     position: absolute;
+    font-size: 16px;
 }
 
 .square.light > .label{

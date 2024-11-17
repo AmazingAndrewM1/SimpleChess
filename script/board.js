@@ -11,7 +11,6 @@ class Board{
                 arr[r][c] = r + c;
             }
         }
-        console.log(arr);
     }
 
     static getNumRows(){
@@ -49,19 +48,18 @@ for (let r = 0; r < Board.getNumRows(); ++r){
     isLight = !isLight;
 }
 
-let charCode1 = "1".charCodeAt(0);
 let squares = frontEndBoard.childNodes;
-for (let r = 0, i = 0; r < Board.getNumRows(); ++r, i += Board.getNumRows()){
+let charCode1 = "1".charCodeAt(0);
+for (let r = 0; r < Board.getNumRows(); ++r){
     let label = document.createElement("div");
     label.classList.add("label", "row");
     label.innerHTML = String.fromCharCode(charCode1 + Board.getNumRows() - r - 1);
-    squares[i].appendChild(label);
+    squares[r * Board.getNumRows()].appendChild(label);
 }
-
 let charCodea = "a".charCodeAt(0);
 for (let c = 0; c < Board.getNumColumns(); ++c){
-    let columnLabel = document.createElement("div");
-    columnLabel.classList.add("label", "column");
-    columnLabel.innerHTML = String.fromCharCode(charCodea + c);
-    squares[Board.getNumSquares() - Board.getNumColumns() + c].appendChild(columnLabel);
+    let label = document.createElement("div");
+    label.classList.add("label", "column");
+    label.innerHTML = String.fromCharCode(charCodea + c);
+    squares[Board.getNumSquares() - Board.getNumColumns() + c].appendChild(label);
 }
