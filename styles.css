@@ -69,6 +69,9 @@ body{
     width: 100%;
     height: 100%;
     background-size: 600% 200%;
+    position: absolute;
+    top: 0px;
+    left: 0px;
 }
 
 .white{

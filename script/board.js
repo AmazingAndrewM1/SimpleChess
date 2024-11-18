@@ -63,10 +63,3 @@ for (let c = 0; c < Board.getNumColumns(); ++c){
     label.innerHTML = String.fromCharCode(charCodea + c);
     squares[Board.getNumSquares() - Board.getNumColumns() + c].appendChild(label);
 }
-
-/* Comply with accessibility. */
-let pieceDiv = document.createElement("div");
-pieceDiv.classList.add("sprite", "black", "rook");
-pieceDiv.role = "img";
-pieceDiv.ariaLabel = "black rook";
-squares[0].appendChild(pieceDiv);
