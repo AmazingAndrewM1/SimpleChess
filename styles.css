@@ -3,7 +3,9 @@ body{
     padding: 0px;
 }
 
-/* Link for explanation of CSS Grid: https://css-tricks.com/snippets/css/complete-guide-grid/#aa-introduction-to-css-grid */
+/*  Link for explanation of CSS Grid: 
+    https://css-tricks.com/snippets/css/complete-guide-grid/#aa-introduction-to-css-grid 
+*/
 #board{
     --board-size: min(75vw, 75vh);
     width: var(--board-size);
@@ -29,7 +31,9 @@ body{
     background-color: darkgray;
 }
 
-/* Link to position to top-left and top-right of container: https://techstacker.com/put-elements-bottom-container-css/ */
+/*  Link to position to top left and top right of container: 
+    https://techstacker.com/put-elements-bottom-container-css/ 
+ */
 .label{
     margin: 5%;
     position: absolute;
@@ -52,4 +56,49 @@ body{
 .label.column{
     bottom: 0px;
     right: 0px;
+}
+
+/*  Link with spritesheets in CSS
+    https://www.tutorialstonight.com/background-image-in-css#how-to-add
+    https://stackoverflow.com/questions/2430206/how-can-i-scale-an-image-in-a-css-sprite#answer-56664704
+    Honestly, I still do not understand why this works, but it does.
+*/
+.sprite{
+    background-image: url("/images/ChessMenSpriteSheet.png");
+    background-repeat: no-repeat;
+    width: 100%;
+    height: 100%;
+    background-size: 600% 200%;
+}
+
+.white{
+    background-position-y: 0%;
+}
+
+.black{
+    background-position-y: 100%;
+}
+
+.king{
+    background-position-x: 0%;
+}
+
+.queen{
+    background-position-x: 20%;
+}
+
+.bishop{
+    background-position-x: 40%;
+}
+
+.knight{
+    background-position-x: 60%;
+}
+
+.rook{
+    background-position-x: 80%;
+}
+
+.pawn{
+    background-position-x: 100%;
 }
