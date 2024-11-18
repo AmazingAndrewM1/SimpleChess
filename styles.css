@@ -3,21 +3,22 @@ body{
     padding: 0px;
 }
 
+/* Link for explanation of CSS Grid: https://css-tricks.com/snippets/css/complete-guide-grid/#aa-introduction-to-css-grid */
 #board{
     --board-size: min(75vw, 75vh);
     width: var(--board-size);
     height: var(--board-size);
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0px;
+    display: grid;
+    grid-template: repeat(8, 1fr) / repeat(8, 1fr);
+    grid-auto-flow: row;
+    gap: 0px 0px;
 }
 
 .square{
-    width: 12.5%;
-    height: 12.5%;
     outline: solid 1px black;
     position: relative;
+    grid-row: auto / span 1;
+    grid-column: auto / span 1;
 }
 
 .square.light{
