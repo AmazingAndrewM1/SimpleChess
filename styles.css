@@ -32,7 +32,7 @@ body{
 .label{
     margin: 5%;
     position: absolute;
-    font-size: 16px;
+    font-size: min(16px, 5cqw);
 }
 
 .square.light > .label{

@@ -63,3 +63,4 @@ for (let c = 0; c < Board.getNumColumns(); ++c){
     label.innerHTML = String.fromCharCode(charCodea + c);
     squares[Board.getNumSquares() - Board.getNumColumns() + c].appendChild(label);
 }
+
