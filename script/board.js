@@ -93,9 +93,9 @@ class Board{
                 if (this.pieces[r][c] !== null){
                     let piece = this.pieces[r][c];
                     let pieceDiv = document.createElement("div");
-                    pieceDiv.classList.add("sprite", piece.getColorToString(), piece.getTypeToString());
+                    pieceDiv.classList.add("sprite", Piece.Color.getString(piece.getColor()), Piece.Type.getString(piece.getType()));
                     pieceDiv.role = "img";
-                    pieceDiv.ariaLabel = `${piece.getColorToString()} ${piece.getTypeToString()}`;
+                    pieceDiv.ariaLabel = `${Piece.Color.getString(piece.getColor())} ${Piece.Type.getString(piece.getType())}`;
                     squares[r * Board.getNumRows() + c].appendChild(pieceDiv);
                 }
             }

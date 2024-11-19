@@ -5,11 +5,39 @@ class Piece{
         ROOK: 2,
         BISHOP: 3,
         KNIGHT: 4,
-        PAWN: 5
+        PAWN: 5,
+        getString: function(type){
+            switch (type){
+                case Piece.Type.KING:
+                    return "king";
+                case Piece.Type.QUEEN:
+                    return "queen";
+                case Piece.Type.ROOK:
+                    return "rook";
+                case Piece.Type.BISHOP:
+                    return "bishop";
+                case Piece.Type.KNIGHT:
+                    return "knight";
+                case Piece.Type.PAWN:
+                    return "pawn";
+                default:
+                    throw new Error("Type not in list");
+            }
+        }
     });
     static Color = Object.freeze({
         WHITE: 0,
-        BLACK: 1
+        BLACK: 1,
+        getString: function(color){
+            switch (color){
+                case Piece.Color.WHITE:
+                    return "white";
+                case Piece.Color.BLACK:
+                    return "black";
+                default:
+                    throw new Error("Color not in list");
+            }
+        }
     });
 
     constructor(type, color){
@@ -28,36 +56,6 @@ class Piece{
 
     getColor(){
         return this.color;
-    }
-
-    getTypeToString(){
-        switch (this.type){
-            case Piece.Type.KING:
-                return "king";
-            case Piece.Type.QUEEN:
-                return "queen";
-            case Piece.Type.ROOK:
-                return "rook";
-            case Piece.Type.BISHOP:
-                return "bishop";
-            case Piece.Type.KNIGHT:
-                return "knight";
-            case Piece.Type.PAWN:
-                return "pawn";
-            default:
-                throw new Error("This piece type is not accounted for ...");
-        }
-    }
-
-    getColorToString(){
-        switch (this.color){
-            case Piece.Color.WHITE:
-                return "white";
-            case Piece.Color.BLACK:
-                return "black";
-            default:
-                throw new Error("Color not accounted for...");
-        }
     }
 }
 
