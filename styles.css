@@ -16,6 +16,12 @@ body{
     gap: 0px 0px;
     -webkit-user-select: none; /* Safari compatibility */
     user-select: none;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    bottom: 0px;
+    right: 0px;
+    margin: auto;
 }
 
 .square{
