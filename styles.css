@@ -14,6 +14,7 @@ body{
     grid-template: repeat(8, 1fr) / repeat(8, 1fr);
     grid-auto-flow: row;
     gap: 0px 0px;
+    -webkit-user-select: none; /* Safari compatibility */
     user-select: none;
 }
 
@@ -70,6 +71,7 @@ body{
     width: 100%;
     height: 100%;
     background-size: 600% 200%;
+    z-index: initial;
     position: absolute;
     top: 0px;
     left: 0px;
@@ -105,4 +107,21 @@ body{
 
 .pawn{
     background-position-x: 100%;
+}
+
+/*  Useful cursor effects for usability purposes
+    https://developer.mozilla.org/en-US/docs/Web/CSS/cursor
+*/
+#board:hover{
+    cursor: default;
+}
+
+.square:has(> .sprite):hover{
+    cursor: grab;
+}
+
+.sprite.selected{
+    position: absolute;
+    z-index: 1;
+    transform: translate(attr(data-offsetx), attr(data-offsety));
 }
