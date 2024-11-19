@@ -4,11 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simple Chess</title>
-    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <link rel="icon" href="/images/favicon.ico" type="image/x-icon" >
     <link rel="stylesheet" href="styles.css" type="text/css">
 </head>
 <body>
     <div id="board"></div>
-    <script type="module" src="script/board.js"></script>
+    <!--    .js files with import and export statements require type="module" to function properly.
+            https://www.javascripttutorial.net/es6-modules/
+    -->
+    <script src="script/board.js" type="module"></script>
 </body>
 </html>

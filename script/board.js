@@ -100,7 +100,7 @@ class Board{
             }
         }
 
-        /*  Explanation of how to mimic a MouseDrag event when MouseDrag Event does not trigger because JavaScript is dumb:
+        /*  Explanation of how to mimic a MouseDrag Event when MouseDrag Event does not trigger because JavaScript is dumb:
             https://techozu.com/detect-mouse-drag-javascript/#:~:text=The%20idea%20is%20very%20straightforward%3A%201%20Create%20a,was%20dragged%3B%20if%20false%2C%20it%20was%20just%20clicked.
         */
         frontEndBoard.addEventListener("mousedown", (event) => this.handleMouseDown(event));
@@ -155,8 +155,25 @@ class Board{
 
         for (const child of square.childNodes){
             if (child.classList.contains("selected")){
-                let childRect = child.getBoundingClientRect();
-                child.style.transform = `translate(${offsetX - 0.5 * childRect.width}px, ${offsetY - 0.5 * childRect.height}px)`;
+                let boardRect = event.currentTarget.getBoundingClientRect();
+                let squareRect = square.getBoundingClientRect();
+                let spriteRect = child.getBoundingClientRect();
+
+                let squareOffsetX = event.clientX - squareRect.left;
+                let squareOffsetY = event.clientY - squareRect.top;
+                if (event.clientX < boardRect.left){
+                    squareOffsetX = boardRect.left - squareRect.left;
+                }
+                else if (event.clientX > boardRect.right){
+                    squareOffsetX = boardRect.right - squareRect.left;
+                }
+                if (event.clientY < boardRect.top){
+                    squareOffsetY = boardRect.top - squareRect.top;
+                }
+                else if (event.clientY > boardRect.bottom){
+                    squareOffsetY = boardRect.bottom - squareRect.top;
+                }
+                child.style.transform = `translate(${squareOffsetX - 0.5 * spriteRect.width}px, ${squareOffsetY - 0.5 * spriteRect.height}px)`;
             }
         }
     }

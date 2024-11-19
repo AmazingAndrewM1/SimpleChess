@@ -123,5 +123,4 @@ body{
 .sprite.selected{
     position: absolute;
     z-index: 1;
-    transform: translate(attr(data-offsetx), attr(data-offsety));
 }
