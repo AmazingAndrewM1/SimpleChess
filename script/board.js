@@ -160,13 +160,14 @@ class Board{
                 let spriteRect = child.getBoundingClientRect();
 
                 let squareOffsetX = event.clientX - squareRect.left;
-                let squareOffsetY = event.clientY - squareRect.top;
                 if (event.clientX < boardRect.left){
                     squareOffsetX = boardRect.left - squareRect.left;
                 }
                 else if (event.clientX > boardRect.right){
                     squareOffsetX = boardRect.right - squareRect.left;
                 }
+
+                let squareOffsetY = event.clientY - squareRect.top;
                 if (event.clientY < boardRect.top){
                     squareOffsetY = boardRect.top - squareRect.top;
                 }
@@ -180,15 +181,34 @@ class Board{
 
     handleMouseUp(event){
         event.preventDefault();
-        this.isMouseDown = false;
 
         let square = event.currentTarget.childNodes[this.selected.row * Board.getNumRows() + this.selected.column];
+        let piece = null;
         for (const child of square.childNodes){
             if (child.classList.contains("sprite")){
-                child.classList.remove("selected");
-                child.removeAttribute("style");
+                piece = child;
+                break;
             }
         }
+        if (piece !== null){
+            let rect = event.currentTarget.getBoundingClientRect();
+            let offsetX = event.clientX - rect.left;
+            let offsetY = event.clientY - rect.top;
+            let targetRow = Math.floor(offsetY * Board.getNumRows() / rect.height);
+            let targetColumn = Math.floor(offsetX * Board.getNumColumns() / rect.width);
+
+            /* Update back end */
+            this.pieces[targetRow][targetColumn] = this.pieces[this.selected.row][this.selected.column];
+            this.pieces[this.selected.row][this.selected.column] = null;
+
+            /* Update front end */
+            square.removeChild(piece);
+            piece.classList.remove("selected");
+            piece.removeAttribute("style");
+            event.currentTarget.childNodes[targetRow * Board.getNumRows() + targetColumn].appendChild(piece);
+        }
+
+        this.isMouseDown = false;
     }
 }
 
