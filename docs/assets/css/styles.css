@@ -72,7 +72,7 @@ body{
     Honestly, I still do not understand why this works, but it does.
 */
 .sprite{
-    background-image: url("/images/ChessMenSpriteSheet.png");
+    background-image: url("../images/ChessMenSpriteSheet.png");
     background-repeat: no-repeat;
     width: 100%;
     height: 100%;
