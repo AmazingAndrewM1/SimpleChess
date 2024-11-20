@@ -193,14 +193,15 @@ class Board{
             let offsetY = event.clientY - rect.top;
             let targetRow = Math.floor(offsetY * Board.getNumRows() / rect.height);
             let targetColumn = Math.floor(offsetX * Board.getNumColumns() / rect.width);
+
+            this.selected.piece.classList.remove("selected");
+            this.selected.piece.removeAttribute("style");
             if (targetRow >= 0 && targetRow < Board.getNumRows() && targetColumn >= 0 && targetColumn < Board.getNumColumns()){
                 /* Update back end */
                 this.pieces[targetRow][targetColumn] = this.pieces[this.selected.row][this.selected.column];
                 this.pieces[this.selected.row][this.selected.column] = null;
                 /* Update front end */
                 this.selected.square.removeChild(this.selected.piece);
-                this.selected.piece.classList.remove("selected");
-                this.selected.piece.removeAttribute("style");
                 event.currentTarget.childNodes[targetRow * Board.getNumRows() + targetColumn].appendChild(this.selected.piece);
             }
         }
