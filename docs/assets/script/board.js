@@ -1,5 +1,19 @@
 import {Piece, King, Queen, Rook, Bishop, Knight, Pawn} from "./pieces/piece-module.js";
 
+/* Utility function that returns 
+    1) val if min <= val <= max
+    2) min if val < min
+    3) max if min > max 
+*/
+function clamp(min, val, max){
+    if (val < min){
+        return min;
+    }
+    if (val > max){
+        return max;
+    }
+    return val;
+}
 class Board{
     static #NUM_ROWS = 8;
     static #NUM_COLUMNS = 8;
@@ -123,23 +137,30 @@ class Board{
         let rect = event.currentTarget.getBoundingClientRect();
         let offsetX = event.clientX - rect.left;
         let offsetY = event.clientY - rect.top;
-        let row = Math.floor(offsetY * Board.getNumRows() / rect.height);
-        let column = Math.floor(offsetX * Board.getNumColumns() / rect.width);
+        let row = clamp(0, Math.floor(offsetY * Board.getNumRows() / rect.height), Board.getNumRows() - 1);
+        let column = clamp(0, Math.floor(offsetX * Board.getNumColumns() / rect.width), Board.getNumColumns() - 1);
 
         this.selected = {
             row: row,
-            column: column
+            column: column,
+            square: null,   /* Update later to prevent self-referencing bug */
+            piece: null,
+            clientX: event.clientX,
+            clientY: event.clientY
         };
 
-        let square = event.currentTarget.childNodes[this.selected.row * Board.getNumRows() + this.selected.column];
-        for (const child of square.childNodes){
+        this.selected.square = event.currentTarget.childNodes[this.selected.row * Board.getNumRows() + this.selected.column];
+        for (const child of this.selected.square.childNodes){
             if (child.classList.contains("sprite")){
                 child.classList.add("selected");
                 child.style.transform = "translate(0px, 0px)";
+                this.selected.piece = child;
+                break;
             }
         }
 
         this.isMouseDown = true;
+        this.isDragging = false;
     }
 
     handleMouseMove(event){
@@ -147,68 +168,45 @@ class Board{
         if (this.isMouseDown === false){
             return;
         }
+        /* Add tolerance to prevent accidental dragging */
+        if (this.isDragging === false && Math.abs(this.selected.clientX - event.clientX) + Math.abs(this.selected.clientY - event.clientY) < 5){
+            return;
+        }
 
-        let square = event.currentTarget.childNodes[this.selected.row * Board.getNumRows() + this.selected.column];
-        let squareRect = square.getBoundingClientRect();
-        let offsetX = event.clientX - squareRect.left;
-        let offsetY = event.clientY - squareRect.top;
-
-        for (const child of square.childNodes){
-            if (child.classList.contains("selected")){
-                let boardRect = event.currentTarget.getBoundingClientRect();
-                let squareRect = square.getBoundingClientRect();
-                let spriteRect = child.getBoundingClientRect();
-
-                let squareOffsetX = event.clientX - squareRect.left;
-                if (event.clientX < boardRect.left){
-                    squareOffsetX = boardRect.left - squareRect.left;
-                }
-                else if (event.clientX > boardRect.right){
-                    squareOffsetX = boardRect.right - squareRect.left;
-                }
-
-                let squareOffsetY = event.clientY - squareRect.top;
-                if (event.clientY < boardRect.top){
-                    squareOffsetY = boardRect.top - squareRect.top;
-                }
-                else if (event.clientY > boardRect.bottom){
-                    squareOffsetY = boardRect.bottom - squareRect.top;
-                }
-                child.style.transform = `translate(${squareOffsetX - 0.5 * spriteRect.width}px, ${squareOffsetY - 0.5 * spriteRect.height}px)`;
-            }
+        this.isDragging = true;
+        if (this.selected.piece !== null){
+            let boardRect = event.currentTarget.getBoundingClientRect();
+            let squareRect = this.selected.square.getBoundingClientRect();
+            let spriteRect = this.selected.piece.getBoundingClientRect();
+            let squareOffsetX = clamp(boardRect.left, event.clientX, boardRect.right) - squareRect.left;
+            let squareOffsetY = clamp(boardRect.top, event.clientY, boardRect.bottom) - squareRect.top;
+            this.selected.piece.style.transform = `translate(${squareOffsetX - 0.5 * spriteRect.width}px, ${squareOffsetY - 0.5 * spriteRect.height}px)`
         }
     }
 
     handleMouseUp(event){
         event.preventDefault();
 
-        let square = event.currentTarget.childNodes[this.selected.row * Board.getNumRows() + this.selected.column];
-        let piece = null;
-        for (const child of square.childNodes){
-            if (child.classList.contains("sprite")){
-                piece = child;
-                break;
-            }
-        }
-        if (piece !== null){
+        if (this.selected.piece !== null){
             let rect = event.currentTarget.getBoundingClientRect();
             let offsetX = event.clientX - rect.left;
             let offsetY = event.clientY - rect.top;
             let targetRow = Math.floor(offsetY * Board.getNumRows() / rect.height);
             let targetColumn = Math.floor(offsetX * Board.getNumColumns() / rect.width);
-
-            /* Update back end */
-            this.pieces[targetRow][targetColumn] = this.pieces[this.selected.row][this.selected.column];
-            this.pieces[this.selected.row][this.selected.column] = null;
-
-            /* Update front end */
-            square.removeChild(piece);
-            piece.classList.remove("selected");
-            piece.removeAttribute("style");
-            event.currentTarget.childNodes[targetRow * Board.getNumRows() + targetColumn].appendChild(piece);
+            if (targetRow >= 0 && targetRow < Board.getNumRows() && targetColumn >= 0 && targetColumn < Board.getNumColumns()){
+                /* Update back end */
+                this.pieces[targetRow][targetColumn] = this.pieces[this.selected.row][this.selected.column];
+                this.pieces[this.selected.row][this.selected.column] = null;
+                /* Update front end */
+                this.selected.square.removeChild(this.selected.piece);
+                this.selected.piece.classList.remove("selected");
+                this.selected.piece.removeAttribute("style");
+                event.currentTarget.childNodes[targetRow * Board.getNumRows() + targetColumn].appendChild(this.selected.piece);
+            }
         }
 
         this.isMouseDown = false;
+        this.isDragging = false;
     }
 }
 

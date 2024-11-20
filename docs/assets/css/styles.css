@@ -69,7 +69,6 @@ body{
 /*  Link with spritesheets in CSS
     https://www.tutorialstonight.com/background-image-in-css#how-to-add
     https://stackoverflow.com/questions/2430206/how-can-i-scale-an-image-in-a-css-sprite#answer-56664704
-    Honestly, I still do not understand why this works, but it does.
 */
 .sprite{
     background-image: url("../images/ChessMenSpriteSheet.png");
