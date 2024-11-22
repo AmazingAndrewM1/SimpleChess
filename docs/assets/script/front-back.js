@@ -57,6 +57,7 @@ class BackEnd{
         this.pieces[7][7] = new Rook(Piece.Color.WHITE);
 
         this.isMouseDown = false;
+        console.log(this.pieces);
     }
 
     static getNumRows(){
@@ -82,7 +83,6 @@ class BackEnd{
     executeMove(from, to){
         this.pieces[to.row][to.column] = this.pieces[from.row][from.column];
         this.pieces[from.row][from.column] = null;
-        console.log(this.pieces);
     }
 }
 
@@ -111,20 +111,22 @@ class FrontEnd{
             isLight = !isLight;
         }
 
-        let squares = this.board.childNodes;
+        let rowLabelContainer = document.getElementById("row-label-container");
         let charCode1 = "1".charCodeAt(0);
         for (let r = 0; r < BackEnd.getNumRows(); ++r){
             let label = document.createElement("div");
-            label.classList.add("label", "row");
+            label.classList.add("label");
             label.innerHTML = String.fromCharCode(charCode1 + BackEnd.getNumRows() - r - 1);
-            squares[r * BackEnd.getNumRows()].appendChild(label);
+            rowLabelContainer.appendChild(label);
         }
+
+        let columnLabelContainer = document.getElementById("column-label-container");
         let charCodea = "a".charCodeAt(0);
         for (let c = 0; c < BackEnd.getNumColumns(); ++c){
             let label = document.createElement("div");
-            label.classList.add("label", "column");
+            label.classList.add("label");
             label.innerHTML = String.fromCharCode(charCodea + c);
-            squares[BackEnd.getNumSquares() - BackEnd.getNumColumns() + c].appendChild(label);
+            columnLabelContainer.appendChild(label);
         }
 
         for (let r = 0; r < BackEnd.getNumRows(); ++r){
@@ -135,7 +137,7 @@ class FrontEnd{
                     pieceDiv.classList.add("sprite", Piece.Color.getString(piece.getColor()), Piece.Type.getString(piece.getType()));
                     pieceDiv.role = "img"; /* Console warning for accessibility appears otherwise */
                     pieceDiv.ariaLabel = `${Piece.Color.getString(piece.getColor())} ${Piece.Type.getString(piece.getType())}`;
-                    squares[r * BackEnd.getNumRows() + c].appendChild(pieceDiv);
+                    this.board.childNodes[r * BackEnd.getNumRows() + c].appendChild(pieceDiv);
                 }
             }
         }
@@ -180,8 +182,9 @@ class FrontEnd{
             clientY: event.clientY
         };
 
-        event.target.style.transform = "translate(0px, 0px)";
-        event.target.classList.add("selected");
+        this.selected.square.classList.add("highlighted");
+        this.selected.piece.style.transform = "translate(0px, 0px)";
+        this.selected.piece.classList.add("selected");
 
         this.isMouseDown = true;
         this.isDragging = false;
@@ -192,7 +195,6 @@ class FrontEnd{
         if (this.isMouseDown === false){
             return;
         }
-        console.log("The mouse is down!");
         /* Add tolerance to prevent accidental dragging */
         if (this.isDragging === false && Math.abs(this.selected.clientX - event.clientX) + Math.abs(this.selected.clientY - event.clientY) < 5){
             return;
@@ -222,11 +224,13 @@ class FrontEnd{
             let targetRow = Math.floor(offsetY * BackEnd.getNumRows() / rect.height);
             let targetColumn = Math.floor(offsetX * BackEnd.getNumColumns() / rect.width);
 
+            this.selected.square.classList.remove("highlighted");
             this.selected.piece.classList.remove("selected");
             this.selected.piece.removeAttribute("style");
-            if (targetRow >= 0 && targetRow < BackEnd.getNumRows() && targetColumn >= 0 && targetColumn < BackEnd.getNumColumns()){
+            if (targetRow >= 0 && targetRow < BackEnd.getNumRows() && 
+                targetColumn >= 0 && targetColumn < BackEnd.getNumColumns() &&
+                !(targetRow === this.selected.row && targetColumn === this.selected.column)){
                 BACK_END.executeMove({row: this.selected.row, column: this.selected.column}, {row: targetRow, column: targetColumn});
-                /* Update front end */
                 this.selected.square.removeChild(this.selected.piece);
                 this.board.childNodes[targetRow * BackEnd.getNumRows() + targetColumn].appendChild(this.selected.piece);
             }

@@ -3,25 +3,62 @@ body{
     padding: 0px;
 }
 
-/*  Link for explanation of CSS Grid: 
-    https://css-tricks.com/snippets/css/complete-guide-grid/#aa-introduction-to-css-grid 
+/*  
+Link for explanation of CSS Grid: 
+https://css-tricks.com/snippets/css/complete-guide-grid/#aa-introduction-to-css-grid 
+
+Information about CSS Subgrid:
+https://catalincodes.com/posts/one-problem-solved-with-css-subgrid
 */
-#board{
-    --board-size: min(75vw, 75vh);
-    width: var(--board-size);
-    height: var(--board-size);
+#board-container{
+    width: 75vmin;
+    height: 75vmin;
+    border: solid 1px black;
     display: grid;
-    grid-template: repeat(8, 1fr) / repeat(8, 1fr);
-    grid-auto-flow: row;
+    grid-template-rows: 97% 3%;
+    grid-template-columns: 3% 97%;
     gap: 0px 0px;
     -webkit-user-select: none; /* Safari compatibility */
     user-select: none;
     position: absolute;
     top: 0px;
-    left: 0px;
     bottom: 0px;
+    left: 0px;
     right: 0px;
     margin: auto;
+}
+
+#row-label-container{
+    position: relative;
+    grid-row: 1 / span 1;
+    grid-column: 1 / span 1;
+    display: grid;
+    grid-template: repeat(8, 1fr) / 100%;
+    grid-auto-flow: column;
+}
+
+#column-label-container{
+    position: relative;
+    grid-row: 2 / span 1;
+    grid-column: 2 / span 1;
+    display: grid;
+    grid-template: 100% / repeat(8, 1fr);
+    grid-auto-flow: row;
+}
+
+#turn-container{
+    position: relative;
+    grid-row: 2 / span 1;
+    grid-column: 1 / span 1;
+}
+
+#board{
+    position: relative;
+    grid-row: 1 / span 1;
+    grid-column: 2 / span 1;
+    display: grid;
+    grid-template: repeat(8, 1fr) / repeat(8, 1fr);
+    grid-auto-flow: row;
 }
 
 .square{
@@ -39,36 +76,30 @@ body{
     background-color: darkgray;
 }
 
-/*  Link to position to top left and top right of container: 
-    https://techstacker.com/put-elements-bottom-container-css/ 
- */
+.square.highlighted{
+    background-color: rgba(152, 255, 152, 0.5);
+}
+
+/*  
+Link to position to top left and top right of container: 
+https://techstacker.com/put-elements-bottom-container-css/ 
+*/
 .label{
-    margin: 5%;
-    position: absolute;
-    font-size: min(16px, 5cqw);
-}
-
-.square.light > .label{
-    color: darkgray;
-}
-
-.square.dark > .label{
-    color: white;
-}
-
-.label.row{
+    position: relative;
+    grid-row: auto / span 1;
+    grid-column: auto / span 1;
+    font-size: 16px;
     top: 0px;
-    left: 0px;
-}
-
-.label.column{
     bottom: 0px;
+    left: 0px;
     right: 0px;
+    margin: auto;
 }
 
-/*  Link with spritesheets in CSS
-    https://www.tutorialstonight.com/background-image-in-css#how-to-add
-    https://stackoverflow.com/questions/2430206/how-can-i-scale-an-image-in-a-css-sprite#answer-56664704
+/*  
+Link with spritesheets in CSS
+https://www.tutorialstonight.com/background-image-in-css#how-to-add
+https://stackoverflow.com/questions/2430206/how-can-i-scale-an-image-in-a-css-sprite#answer-56664704
 */
 .sprite{
     background-image: url("../images/ChessMenSpriteSheet.png");
@@ -76,10 +107,15 @@ body{
     width: 100%;
     height: 100%;
     background-size: 600% 200%;
-    z-index: initial;
+    z-index: 0;
     position: absolute;
     top: 0px;
     left: 0px;
+}
+
+.sprite.selected{
+    position: absolute;
+    z-index: 1;
 }
 
 .white{
@@ -114,8 +150,9 @@ body{
     background-position-x: 100%;
 }
 
-/*  Useful cursor effects for usability purposes
-    https://developer.mozilla.org/en-US/docs/Web/CSS/cursor
+/*  
+Useful cursor effects for usability purposes
+https://developer.mozilla.org/en-US/docs/Web/CSS/cursor
 */
 #board:hover{
     cursor: default;
@@ -123,9 +160,4 @@ body{
 
 .square:has(> .sprite):hover{
     cursor: grab;
-}
-
-.sprite.selected{
-    position: absolute;
-    z-index: 1;
 }
