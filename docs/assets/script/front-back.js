@@ -243,10 +243,14 @@ class FrontEnd{
         if (targetRow >= 0 && targetRow < BackEnd.getNumRows() &&
             targetColumn >= 0 && targetColumn < BackEnd.getNumColumns() &&
             !(targetRow === this.selected.row && targetColumn === this.selected.column)){
-            
             BACK_END.executeMove({row: this.selected.row, column: this.selected.column}, {row: targetRow, column: targetColumn});
+            
             this.selected.square.removeChild(this.selected.piece);
-            this.board.childNodes[targetRow * BackEnd.getNumRows() + targetColumn].appendChild(this.selected.piece);
+            let targetSquare = this.board.childNodes[targetRow * BackEnd.getNumRows() + targetColumn];
+            if (targetSquare.hasChildNodes()){
+                targetSquare.removeChild(targetSquare.firstChild);
+            }
+            targetSquare.appendChild(this.selected.piece);
         }
     }
 }
