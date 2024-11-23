@@ -57,7 +57,8 @@ class BackEnd{
         this.pieces[7][7] = new Rook(Piece.Color.WHITE);
 
         this.isMouseDown = false;
-        console.log(this.pieces);
+        this.isDragging = false;
+        this.hasMadeMove = true;
     }
 
     static getNumRows(){
@@ -91,6 +92,7 @@ class FrontEnd{
         this.board = document.getElementById("board");
         this.isMouseDown = false;
         this.isDragging = false;
+        this.hasMadeMove = true;
     }
 
     initializeHTML(){
@@ -163,6 +165,12 @@ class FrontEnd{
     */
     handleMouseDown(event){
         event.preventDefault();
+        if (this.hasMadeMove === false){
+            event.stopPropagation();
+            this.doMove(event);
+            this.hasMadeMove = true;
+            return;
+        }
         if (event.target.classList.contains("sprite") === false){
             return;
         }
@@ -188,6 +196,7 @@ class FrontEnd{
 
         this.isMouseDown = true;
         this.isDragging = false;
+        this.hasMadeMove = false;
     }
 
     handleMouseMove(event){
@@ -200,44 +209,45 @@ class FrontEnd{
             return;
         }
 
+        let boardRect = this.board.getBoundingClientRect();
+        let squareRect = this.selected.square.getBoundingClientRect();
+        let spriteRect = this.selected.piece.getBoundingClientRect();
+        let squareOffsetX = clamp(boardRect.left, event.clientX, boardRect.right) - squareRect.left;
+        let squareOffsetY = clamp(boardRect.top, event.clientY, boardRect.bottom) - squareRect.top;
+        this.selected.piece.style.transform = `translate(${squareOffsetX - 0.5 * spriteRect.width}px, ${squareOffsetY - 0.5 * spriteRect.height}px)`;
         this.isDragging = true;
-        if (this.selected.piece !== null){
-            let boardRect = this.board.getBoundingClientRect();
-            let squareRect = this.selected.square.getBoundingClientRect();
-            let spriteRect = this.selected.piece.getBoundingClientRect();
-            let squareOffsetX = clamp(boardRect.left, event.clientX, boardRect.right) - squareRect.left;
-            let squareOffsetY = clamp(boardRect.top, event.clientY, boardRect.bottom) - squareRect.top;
-            this.selected.piece.style.transform = `translate(${squareOffsetX - 0.5 * spriteRect.width}px, ${squareOffsetY - 0.5 * spriteRect.height}px)`;
-        }
     }
 
     handleMouseUp(event){
         event.preventDefault();
-        if (this.isMouseDown === false){
+        this.isMouseDown = false;
+        if (this.hasMadeMove){
             return;
         }
-
-        if (this.selected.piece !== null){
-            let rect = this.board.getBoundingClientRect();
-            let offsetX = event.clientX - rect.left;
-            let offsetY = event.clientY - rect.top;
-            let targetRow = Math.floor(offsetY * BackEnd.getNumRows() / rect.height);
-            let targetColumn = Math.floor(offsetX * BackEnd.getNumColumns() / rect.width);
-
-            this.selected.square.classList.remove("highlighted");
-            this.selected.piece.classList.remove("selected");
-            this.selected.piece.removeAttribute("style");
-            if (targetRow >= 0 && targetRow < BackEnd.getNumRows() && 
-                targetColumn >= 0 && targetColumn < BackEnd.getNumColumns() &&
-                !(targetRow === this.selected.row && targetColumn === this.selected.column)){
-                BACK_END.executeMove({row: this.selected.row, column: this.selected.column}, {row: targetRow, column: targetColumn});
-                this.selected.square.removeChild(this.selected.piece);
-                this.board.childNodes[targetRow * BackEnd.getNumRows() + targetColumn].appendChild(this.selected.piece);
-            }
+        if (this.isDragging){
+            this.doMove(event);
         }
+        this.hasMadeMove = this.isDragging;
+    }
 
-        this.isMouseDown = false;
-        this.isDragging = false;
+    doMove(event){
+        let rect = this.board.getBoundingClientRect();
+        let offsetX = event.clientX - rect.left;
+        let offsetY = event.clientY - rect.top;
+        let targetRow = Math.floor(offsetY * BackEnd.getNumRows() / rect.height);
+        let targetColumn = Math.floor(offsetX * BackEnd.getNumColumns() / rect.width);
+
+        this.selected.square.classList.remove("highlighted");
+        this.selected.piece.classList.remove("selected");
+        this.selected.piece.removeAttribute("style");
+        if (targetRow >= 0 && targetRow < BackEnd.getNumRows() &&
+            targetColumn >= 0 && targetColumn < BackEnd.getNumColumns() &&
+            !(targetRow === this.selected.row && targetColumn === this.selected.column)){
+            
+            BACK_END.executeMove({row: this.selected.row, column: this.selected.column}, {row: targetRow, column: targetColumn});
+            this.selected.square.removeChild(this.selected.piece);
+            this.board.childNodes[targetRow * BackEnd.getNumRows() + targetColumn].appendChild(this.selected.piece);
+        }
     }
 }
 
