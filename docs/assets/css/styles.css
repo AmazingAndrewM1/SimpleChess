@@ -1,6 +1,7 @@
 body{
     margin: 0px;
     padding: 0px;
+    background-color: lightgray;
 }
 
 /*  
@@ -50,6 +51,9 @@ https://catalincodes.com/posts/one-problem-solved-with-css-subgrid
     position: relative;
     grid-row: 2 / span 1;
     grid-column: 1 / span 1;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%; /* Get circular effect */
 }
 
 #board{
@@ -60,6 +64,17 @@ https://catalincodes.com/posts/one-problem-solved-with-css-subgrid
     grid-template: repeat(8, 1fr) / repeat(8, 1fr);
     grid-auto-flow: row;
 }
+
+/* Turn container CSS information */
+#turn-container.white{
+    background-color: white;
+}
+
+#turn-container.black{
+    background-color: black;
+}
+
+/* Square CSS information */
 
 .square{
     outline: solid 1px black;
@@ -107,46 +122,46 @@ https://stackoverflow.com/questions/2430206/how-can-i-scale-an-image-in-a-css-sp
     width: 100%;
     height: 100%;
     background-size: 600% 200%;
-    z-index: 0;
-    position: absolute;
+    z-index: 1;
+    position: relative;
     top: 0px;
     left: 0px;
 }
 
 .sprite.selected{
     position: absolute;
-    z-index: 1;
+    z-index: 2;
 }
 
-.white{
+.sprite.white{
     background-position-y: 0%;
 }
 
-.black{
+.sprite.black{
     background-position-y: 100%;
 }
 
-.king{
+.sprite.king{
     background-position-x: 0%;
 }
 
-.queen{
+.sprite.queen{
     background-position-x: 20%;
 }
 
-.bishop{
+.sprite.bishop{
     background-position-x: 40%;
 }
 
-.knight{
+.sprite.knight{
     background-position-x: 60%;
 }
 
-.rook{
+.sprite.rook{
     background-position-x: 80%;
 }
 
-.pawn{
+.sprite.pawn{
     background-position-x: 100%;
 }
 
