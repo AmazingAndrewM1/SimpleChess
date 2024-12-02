@@ -1,3 +1,5 @@
+import {FRONT_END, BACK_END} from "../front-back.js";
+
 class Piece{
     static Type = Object.freeze({
         KING: 0,
@@ -40,6 +42,38 @@ class Piece{
         }
     });
 
+    static getChar(piece){
+        let charCode = 0;
+        switch (piece.getType()){
+            case Piece.Type.KING:
+                charCode = "k".charCodeAt(0);
+                break;
+            case Piece.Type.QUEEN:
+                charCode = "q".charCodeAt(0);
+                break;
+            case Piece.Type.ROOK:
+                charCode = "r".charCodeAt(0);
+                break;
+            case Piece.Type.BISHOP:
+                charCode = "b".charCodeAt(0);
+                break;
+            case Piece.Type.KNIGHT:
+                charCode = "n".charCodeAt(0);
+                break;
+            case Piece.Type.PAWN:
+                charCode = "p".charCodeAt(0);
+                break;
+            default:
+                throw new Error("Piece type not in list");
+        }
+
+        if (piece.getColor() === Piece.Color.WHITE){
+            charCode -= 32;
+        }
+
+        return String.fromCharCode(charCode);
+    }
+
     constructor(type, color){
         this.hasMoved = false;
         this.color = color;
@@ -57,6 +91,19 @@ class Piece{
     getColor(){
         return this.color;
     }
+
+    /**
+    Generate all the destinations squares that abide by the rules of movement for the given piece 
+    while ignoring if the execution of that move would leave the king in check.
+    @param {Object} from - Square from which the current piece stands
+    @param {Number} from.row - Square row from which the current piece stands
+    @param {Number} from.column - Square column from which the current piece stands
+    @returns {{row: number, column: number}[]} destinationSquares
+    */
+    getPseudoLegalMoves(from){
+        
+    }
 }
 
 export default Piece;
+export {FRONT_END, BACK_END};

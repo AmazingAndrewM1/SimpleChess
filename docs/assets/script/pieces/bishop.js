@@ -4,6 +4,10 @@ class Bishop extends Piece{
     constructor(color){
         super(Piece.Type.BISHOP, color);
     }
+
+    getCaptureDirections(){
+        return [];
+    }
 }
 
 export default Bishop;

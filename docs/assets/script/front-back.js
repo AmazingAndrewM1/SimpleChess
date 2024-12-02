@@ -1,4 +1,5 @@
 import {Piece, King, Queen, Rook, Bishop, Knight, Pawn} from "./pieces/piece-module.js";
+import {Files, Ranks, Squares} from "./utils.js";
 
 /** Utility function that returns 
     1) val if min <= val <= max
@@ -19,77 +20,125 @@ function clamp(min, val, max){
     return val;
 }
 
+class Square{
+    #piece = null;
+
+    constructor(rank, file){
+        this.rank = rank;
+        this.file = file;
+        this.#piece = null;
+    }
+
+    /**
+     * @returns {Piece | null}
+     */
+    getPiece(){
+        return this.#piece;
+    }
+
+    /**
+     * @param {Piece} piece 
+     */
+    setPiece(piece){
+        this.#piece = piece;
+    }
+}
+
 class BackEnd{
-    static #NUM_ROWS = 8;
-    static #NUM_COLUMNS = 8;
-    static #NUM_SQUARES = this.#NUM_ROWS * this.#NUM_COLUMNS;
+    #numRows = 12;
+    #numColumns = 10;
+    #numSquares = this.#numRows * this.#numColumns;
 
     constructor(){
-        /* Create 2-dimensional array in JavaScript */
-        this.pieces = new Array(BackEnd.#NUM_ROWS);
-        for (let r = 0; r < BackEnd.#NUM_ROWS; ++r){
-           this.pieces[r] = new Array(BackEnd.#NUM_COLUMNS);
-           this.pieces[r].fill(null);
+        this.board = new Array(this.#numSquares);
+        this.board.fill(null);
+
+        for (let rank = Ranks.ONE; rank <= Ranks.EIGHT; ++rank){
+            for (let file = Files.A; file <= Files.H; ++file){
+                this.createSquare(rank, file);
+            }
         }
 
-        this.pieces[0][0] = new Rook(Piece.Color.BLACK);
-        this.pieces[0][1] = new Knight(Piece.Color.BLACK);
-        this.pieces[0][2] = new Bishop(Piece.Color.BLACK);
-        this.pieces[0][3] = new Queen(Piece.Color.BLACK);
-        this.pieces[0][4] = new King(Piece.Color.BLACK);
-        this.pieces[0][5] = new Bishop(Piece.Color.BLACK);
-        this.pieces[0][6] = new Knight(Piece.Color.BLACK);
-        this.pieces[0][7] = new Rook(Piece.Color.BLACK);
-        for (let c = 0; c < BackEnd.#NUM_COLUMNS; ++c){
-            this.pieces[1][c] = new Pawn(Piece.Color.BLACK);
+        this.getSquare(Ranks.ONE, Files.A).setPiece(new Rook(Piece.Color.WHITE));
+        this.getSquare(Ranks.ONE, Files.B).setPiece(new Knight(Piece.Color.WHITE));
+        this.getSquare(Ranks.ONE, Files.C).setPiece(new Bishop(Piece.Color.WHITE));
+        this.getSquare(Ranks.ONE, Files.D).setPiece(new Queen(Piece.Color.WHITE));
+        this.getSquare(Ranks.ONE, Files.E).setPiece(new King(Piece.Color.WHITE));
+        this.getSquare(Ranks.ONE, Files.F).setPiece(new Bishop(Piece.Color.WHITE));
+        this.getSquare(Ranks.ONE, Files.G).setPiece(new Knight(Piece.Color.WHITE));
+        this.getSquare(Ranks.ONE, Files.H).setPiece(new Rook(Piece.Color.WHITE));
+
+        for (let file = Files.A; file <= Files.H; ++file){
+            this.getSquare(Ranks.TWO, file).setPiece(new Pawn(Piece.Color.WHITE));
+            this.getSquare(Ranks.SEVEN, file).setPiece(new Pawn(Piece.Color.BLACK));
         }
 
-        for (let c = 0; c < BackEnd.#NUM_COLUMNS; ++c){
-            this.pieces[6][c] = new Pawn(Piece.Color.WHITE);
+        this.getSquare(Ranks.EIGHT, Files.A).setPiece(new Rook(Piece.Color.BLACK));
+        this.getSquare(Ranks.EIGHT, Files.B).setPiece(new Knight(Piece.Color.BLACK));
+        this.getSquare(Ranks.EIGHT, Files.C).setPiece(new Bishop(Piece.Color.BLACK));
+        this.getSquare(Ranks.EIGHT, Files.D).setPiece(new Queen(Piece.Color.BLACK));
+        this.getSquare(Ranks.EIGHT, Files.E).setPiece(new King(Piece.Color.BLACK));
+        this.getSquare(Ranks.EIGHT, Files.F).setPiece(new Bishop(Piece.Color.BLACK));
+        this.getSquare(Ranks.EIGHT, Files.G).setPiece(new Knight(Piece.Color.BLACK));
+        this.getSquare(Ranks.EIGHT, Files.H).setPiece(new Rook(Piece.Color.BLACK));
+        this.printDebug();
+    }
+
+    printDebug(){
+        let output = "";
+        for (let r = 0; r < this.#numRows; ++r){
+            for (let c = 0; c < this.#numColumns; ++c){
+                let square = this.board[r * this.#numColumns + c];
+                if (square === null){
+                    output += "- ";
+                }
+                else if (square.getPiece() === null){
+                    output += ". ";
+                }
+                else{
+                    output += Piece.getChar(square.getPiece()) + " ";
+                }
+            }
+            output += "\n";
         }
-        this.pieces[7][0] = new Rook(Piece.Color.WHITE);
-        this.pieces[7][1] = new Knight(Piece.Color.WHITE);
-        this.pieces[7][2] = new Bishop(Piece.Color.WHITE);
-        this.pieces[7][3] = new Queen(Piece.Color.WHITE);
-        this.pieces[7][4] = new King(Piece.Color.WHITE);
-        this.pieces[7][5] = new Bishop(Piece.Color.WHITE);
-        this.pieces[7][6] = new Knight(Piece.Color.WHITE);
-        this.pieces[7][7] = new Rook(Piece.Color.WHITE);
-
-        this.isMouseDown = false;
-        this.isDragging = false;
-        this.hasMadeMove = true;
+        console.log(output);
     }
 
-    static getNumRows(){
-        return this.#NUM_ROWS;
+    getSquare(rank, file){
+        let r = rank - Ranks.ONE;
+        let c = file - Files.A;
+        return this.board[Squares.A1 + r * this.#numColumns + c];
     }
 
-    static getNumColumns(){
-        return this.#NUM_COLUMNS;
+    createSquare(rank, file){
+        let r = rank - Ranks.ONE;
+        let c = file - Files.A;
+        this.board[Squares.A1 + r * this.#numColumns + c] = new Square(rank, file);
     }
 
-    static getNumSquares(){
-        return this.#NUM_SQUARES;
-    }
     /**
-     * @param {Number} r The row number with range [0, 7] 
-     * @param {Number} c The column number with range [0, 7]
-     * @returns {Piece} The piece at row r and column c
+     * @param {Square} square - the current square
+     * @param {Object} direction - the direction to perform the transformation
+     * @returns {Square | null} the square after the transformation and null if that square does not exist on the standard 8x8 chessboard.
      */
-    getPiece(r, c){
-        return this.pieces[r][c];
+    getTransposed(square, direction){
+        
     }
 
     executeMove(from, to){
-        this.pieces[to.row][to.column] = this.pieces[from.row][from.column];
-        this.pieces[from.row][from.column] = null;
+        this.getSquare(to.rank, to.file).setPiece(this.getSquare(from.rank, from.file).getPiece());
+        this.getSquare(from.rank, from.file).setPiece(null);
+        this.printDebug();
     }
 }
 
 class FrontEnd{
     constructor(){
         this.board = document.getElementById("board");
+        this.numRows = 8;
+        this.numColumns = 8;
+        this.numSquares = this.numRows * this.numColumns;
+        this.isWhiteOnBottom = true;
         this.isMouseDown = false;
         this.isDragging = false;
         this.hasMadeMove = true;
@@ -97,8 +146,8 @@ class FrontEnd{
 
     initializeHTML(){
         let isLight = true;
-        for (let r = 0; r < BackEnd.getNumRows(); ++r){
-            for (let c = 0; c < BackEnd.getNumColumns(); ++c){
+        for (let r = 0; r < this.numRows; ++r){
+            for (let c = 0; c < this.numColumns; ++c){
                 let square = document.createElement("div");
                 square.classList.add("square");
                 if (isLight){
@@ -115,31 +164,31 @@ class FrontEnd{
 
         let rowLabelContainer = document.getElementById("row-label-container");
         let charCode1 = "1".charCodeAt(0);
-        for (let r = 0; r < BackEnd.getNumRows(); ++r){
+        for (let r = 0; r < this.numRows; ++r){
             let label = document.createElement("div");
             label.classList.add("label");
-            label.innerHTML = String.fromCharCode(charCode1 + BackEnd.getNumRows() - r - 1);
+            label.innerHTML = String.fromCharCode(charCode1 + this.numRows - r - 1);
             rowLabelContainer.appendChild(label);
         }
 
         let columnLabelContainer = document.getElementById("column-label-container");
         let charCodea = "a".charCodeAt(0);
-        for (let c = 0; c < BackEnd.getNumColumns(); ++c){
+        for (let c = 0; c < this.numColumns; ++c){
             let label = document.createElement("div");
             label.classList.add("label");
             label.innerHTML = String.fromCharCode(charCodea + c);
             columnLabelContainer.appendChild(label);
         }
 
-        for (let r = 0; r < BackEnd.getNumRows(); ++r){
-            for (let c = 0; c < BackEnd.getNumColumns(); ++c){
-                if (BACK_END.getPiece(r, c) !== null){
-                    let piece = BACK_END.getPiece(r, c);
+        for (let rank = Ranks.ONE; rank <= Ranks.EIGHT; ++rank){
+            for (let file = Files.A; file <= Files.H; ++file){
+                if (BACK_END.getSquare(rank, file).getPiece() !== null){
+                    let piece = BACK_END.getSquare(rank, file).getPiece();
                     let pieceDiv = document.createElement("div");
                     pieceDiv.classList.add("sprite", Piece.Color.getString(piece.getColor()), Piece.Type.getString(piece.getType()));
-                    pieceDiv.role = "img"; /* Console warning for accessibility appears otherwise */
+                    pieceDiv.role = "img"; /* Console warning for accessibility otherwise */
                     pieceDiv.ariaLabel = `${Piece.Color.getString(piece.getColor())} ${Piece.Type.getString(piece.getType())}`;
-                    this.board.childNodes[r * BackEnd.getNumRows() + c].appendChild(pieceDiv);
+                    this.board.childNodes[this.getIndex(rank, file)].appendChild(pieceDiv);
                 }
             }
         }
@@ -151,6 +200,16 @@ class FrontEnd{
         document.addEventListener("mousedown", (event) => this.handleMouseDown(event));
         document.addEventListener("mousemove", (event) => this.handleMouseMove(event));
         document.addEventListener("mouseup", (event) => this.handleMouseUp(event));
+    }
+
+    getIndex(rank, file){
+        let r = rank;
+        let c = file;
+        if (this.isWhiteOnBottom){
+            r = this.numRows - r - 1;
+        }
+
+        return r * this.numColumns + c;
     }
 
     /*  
@@ -178,8 +237,8 @@ class FrontEnd{
         let rect = this.board.getBoundingClientRect();
         let offsetX = event.clientX - rect.left;
         let offsetY = event.clientY - rect.top;
-        let row = clamp(0, Math.floor(offsetY * BackEnd.getNumRows() / rect.height), BackEnd.getNumRows() - 1);
-        let column = clamp(0, Math.floor(offsetX * BackEnd.getNumColumns() / rect.width), BackEnd.getNumColumns() - 1);
+        let row = clamp(0, Math.floor(offsetY * this.numRows / rect.height), this.numRows - 1);
+        let column = clamp(0, Math.floor(offsetX * this.numColumns / rect.width), this.numColumns - 1);
 
         this.selected = {
             row: row,
@@ -234,27 +293,38 @@ class FrontEnd{
         let rect = this.board.getBoundingClientRect();
         let offsetX = event.clientX - rect.left;
         let offsetY = event.clientY - rect.top;
-        let targetRow = Math.floor(offsetY * BackEnd.getNumRows() / rect.height);
-        let targetColumn = Math.floor(offsetX * BackEnd.getNumColumns() / rect.width);
+        let targetRow = Math.floor(offsetY * this.numRows / rect.height);
+        let targetColumn = Math.floor(offsetX * this.numColumns / rect.width);
 
         this.selected.square.classList.remove("highlighted");
         this.selected.piece.classList.remove("selected");
         this.selected.piece.removeAttribute("style");
-        if (targetRow >= 0 && targetRow < BackEnd.getNumRows() &&
-            targetColumn >= 0 && targetColumn < BackEnd.getNumColumns() &&
+        if (targetRow >= 0 && targetRow < this.numRows &&
+            targetColumn >= 0 && targetColumn < this.numColumns &&
             !(targetRow === this.selected.row && targetColumn === this.selected.column)){
-            BACK_END.executeMove({row: this.selected.row, column: this.selected.column}, {row: targetRow, column: targetColumn});
-            
+            BACK_END.executeMove({rank: this.getRank(this.selected.row), file: this.selected.column}, 
+                                 {rank: this.getRank(targetRow), file: targetColumn});
+
             this.selected.square.removeChild(this.selected.piece);
-            let targetSquare = this.board.childNodes[targetRow * BackEnd.getNumRows() + targetColumn];
+            let targetSquare = this.board.childNodes[targetRow * this.numRows + targetColumn];
             if (targetSquare.hasChildNodes()){
                 targetSquare.removeChild(targetSquare.firstChild);
             }
             targetSquare.appendChild(this.selected.piece);
         }
     }
+
+    getRank(rank){
+        let r = rank;
+        if (this.isWhiteOnBottom){
+            r = this.numRows - r - 1;
+        }
+        return r;
+    }
 }
 
 const BACK_END = new BackEnd();
 const FRONT_END = new FrontEnd();
 FRONT_END.initializeHTML();
+
+export {FRONT_END, BACK_END};
