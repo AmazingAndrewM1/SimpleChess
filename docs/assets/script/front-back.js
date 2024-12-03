@@ -1,5 +1,5 @@
 import {Piece, King, Queen, Rook, Bishop, Knight, Pawn} from "./pieces/piece-module.js";
-import {Files, Ranks, Squares} from "./utils.js";
+import {Files, Ranks} from "./utils.js";
 
 /** Utility function that returns 
     1) val if min <= val <= max
@@ -81,11 +81,10 @@ class BackEnd{
         this.getSquare(Ranks.EIGHT, Files.F).setPiece(new Bishop(Piece.Color.BLACK));
         this.getSquare(Ranks.EIGHT, Files.G).setPiece(new Knight(Piece.Color.BLACK));
         this.getSquare(Ranks.EIGHT, Files.H).setPiece(new Rook(Piece.Color.BLACK));
-        this.printDebug();
     }
 
     printDebug(){
-        let output = "";
+        let output = new String();
         for (let r = 0; r < this.#numRows; ++r){
             for (let c = 0; c < this.#numColumns; ++c){
                 let square = this.board[r * this.#numColumns + c];
@@ -105,30 +104,43 @@ class BackEnd{
     }
 
     getSquare(rank, file){
+        const OFFSET = 21;
         let r = rank - Ranks.ONE;
         let c = file - Files.A;
-        return this.board[Squares.A1 + r * this.#numColumns + c];
+        return this.board[OFFSET + r * this.#numColumns + c];
     }
 
     createSquare(rank, file){
+        /* Cannot use getSquare because of references in JavaScript */
+        const OFFSET = 21;
         let r = rank - Ranks.ONE;
         let c = file - Files.A;
-        this.board[Squares.A1 + r * this.#numColumns + c] = new Square(rank, file);
+        this.board[OFFSET + r * this.#numColumns + c] = new Square(rank, file);
     }
 
     /**
      * @param {Square} square - the current square
      * @param {Object} direction - the direction to perform the transformation
-     * @returns {Square | null} the square after the transformation and null if that square does not exist on the standard 8x8 chessboard.
+     * @returns {Square | null} the square after the transformation and null if the corresponding square would not exist on the standard 8x8 chessboard.
      */
     getTransposed(square, direction){
-        
+        return this.getSquare(square.rank + direction.dy, square.file + direction.dx);
+    }
+
+    getMoves(row, column){
+        let realRank = row;
+        let file = column;
+        if (FRONT_END.isWhiteOnBottom){
+            realRank = FRONT_END.numRows - row - 1;
+        }
+
+        let square = this.getSquare(realRank, file);
+        return square.getPiece().getPseudoLegalMoves(square);
     }
 
     executeMove(from, to){
         this.getSquare(to.rank, to.file).setPiece(this.getSquare(from.rank, from.file).getPiece());
         this.getSquare(from.rank, from.file).setPiece(null);
-        this.printDebug();
     }
 }
 
@@ -252,6 +264,9 @@ class FrontEnd{
         this.selected.square.classList.add("highlighted");
         this.selected.piece.style.transform = "translate(0px, 0px)";
         this.selected.piece.classList.add("selected");
+
+        let moves = BACK_END.getMoves(row, column);
+        console.log(moves);
 
         this.isMouseDown = true;
         this.isDragging = false;

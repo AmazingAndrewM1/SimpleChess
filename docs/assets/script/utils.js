@@ -20,8 +20,4 @@ const Ranks = Object.freeze({
     EIGHT: 7
 });
 
-const Squares = Object.freeze({
-    A1: 21,
-});
-
-export {Files, Ranks, Squares};
+export {Files, Ranks};

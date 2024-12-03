@@ -101,7 +101,7 @@ class Piece{
     @returns {{row: number, column: number}[]} destinationSquares
     */
     getPseudoLegalMoves(from){
-        
+        return [];
     }
 }
 
