@@ -342,4 +342,4 @@ const BACK_END = new BackEnd();
 const FRONT_END = new FrontEnd();
 FRONT_END.initializeHTML();
 
-export {FRONT_END, BACK_END};
+export {FRONT_END, BACK_END, Square};

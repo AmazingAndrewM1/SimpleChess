@@ -1,4 +1,4 @@
-import {FRONT_END, BACK_END} from "../front-back.js";
+import {FRONT_END, BACK_END, Square} from "../front-back.js";
 
 class Piece{
     static Type = Object.freeze({
@@ -95,10 +95,8 @@ class Piece{
     /**
     Generate all the destinations squares that abide by the rules of movement for the given piece 
     while ignoring if the execution of that move would leave the king in check.
-    @param {Object} from - Square from which the current piece stands
-    @param {Number} from.row - Square row from which the current piece stands
-    @param {Number} from.column - Square column from which the current piece stands
-    @returns {{row: number, column: number}[]} destinationSquares
+    @param {Square} from - Square from which the current piece stands
+    @returns {Square[]} - destinationSquares
     */
     getPseudoLegalMoves(from){
         return [];
