@@ -129,8 +129,8 @@ class BackEnd{
         return this.getSquare(square.rank + direction.dy, square.file + direction.dx);
     }
 
-    getMoves(from){
-        let square = this.getSquare(from.rank, from.file);
+    getMoves(rank, file){
+        let square = this.getSquare(rank, file);
         return square.getPiece().getPseudoLegalMoves(square);
     }
 
@@ -167,6 +167,9 @@ class FrontEnd{
                 else{
                     square.classList.add("dark");
                 }
+                let moveOptionDiv = document.createElement("div");
+                moveOptionDiv.classList.add("move-option", "hide");
+                square.appendChild(moveOptionDiv);
                 this.board.appendChild(square);
                 isLight = !isLight;
             }
@@ -255,8 +258,8 @@ class FrontEnd{
         this.selected.piece.style.transform = "translate(0px, 0px)";
         this.selected.piece.classList.add("selected");
 
-        let moves = BACK_END.getMoves({rank: this.getReal(this.selected.row), file: this.selected.column});
-        console.log(moves);
+        let moves = BACK_END.getMoves(this.getReal(row), column);
+        this.showMoves(moves);
 
         this.isMouseDown = true;
         this.isDragging = false;
@@ -292,6 +295,19 @@ class FrontEnd{
             this.doMove(event);
         }
         this.hasMadeMove = this.isDragging;
+    }
+
+    showMoves(moves){
+        for (const MOVE_OPTION_DIV of this.board.getElementsByClassName("move-option")){
+            MOVE_OPTION_DIV.classList.remove("show");
+            MOVE_OPTION_DIV.classList.add("hide");
+        }
+        for (const SQUARE of moves){
+            let square = this.getSquare(this.getReal(SQUARE.rank), SQUARE.file);
+            let moveOptionDiv = square.getElementsByClassName("move-option")[0];
+            moveOptionDiv.classList.remove("hide");
+            moveOptionDiv.classList.add("show");
+        }
     }
 
     doMove(event){

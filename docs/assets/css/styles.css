@@ -80,6 +80,15 @@ https://catalincodes.com/posts/one-problem-solved-with-css-subgrid
     background-color: black;
 }
 
+/* Control hiding and showing elements */
+.show{
+    visibility: visible;
+}
+
+.hide{
+    visibility: hidden;
+}
+
 /* Square CSS information */
 
 .square{
@@ -99,6 +108,20 @@ https://catalincodes.com/posts/one-problem-solved-with-css-subgrid
 
 .square.highlighted{
     background-color: rgba(152, 255, 152, 0.5);
+}
+
+.move-option{
+    position: absolute;
+    width: 25%;
+    height: 25%;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    margin: auto;
+    border-radius: 50% 50%;
+    background-color: rgba(92, 172, 45, 0.75);
+    z-index: 1;
 }
 
 /*  
@@ -128,7 +151,7 @@ https://stackoverflow.com/questions/2430206/how-can-i-scale-an-image-in-a-css-sp
     width: 100%;
     height: 100%;
     background-size: 600% 200%;
-    z-index: 1;
+    z-index: 2;
     position: relative;
     top: 0px;
     left: 0px;
@@ -136,7 +159,7 @@ https://stackoverflow.com/questions/2430206/how-can-i-scale-an-image-in-a-css-sp
 
 .sprite.selected{
     position: absolute;
-    z-index: 2;
+    z-index: 3;
 }
 
 .sprite.white{
