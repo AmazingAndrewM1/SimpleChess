@@ -134,9 +134,9 @@ class BackEnd{
         return square.getPiece().getPseudoLegalMoves(square);
     }
 
-    executeMove(from, to){
-        let fromSquare = this.getSquare(from.rank, from.file);
-        let toSquare = this.getSquare(to.rank, to.file);
+    executeMove(fromRank, fromFile, toRank, toFile){
+        let fromSquare = this.getSquare(fromRank, fromFile);
+        let toSquare = this.getSquare(toRank, toFile);
 
         toSquare.setPiece(fromSquare.getPiece());
         fromSquare.setPiece(null);
@@ -200,7 +200,7 @@ class FrontEnd{
                     pieceDiv.classList.add("sprite", Piece.Color.getString(piece.getColor()), Piece.Type.getString(piece.getType()));
                     pieceDiv.role = "img"; /* Console warning for accessibility otherwise */
                     pieceDiv.ariaLabel = `${Piece.Color.getString(piece.getColor())} ${Piece.Type.getString(piece.getType())}`;
-                    this.getSquare({row: this.getReal(square.rank), column: square.file}).appendChild(pieceDiv);
+                    this.getSquare(this.getReal(square.rank), square.file).appendChild(pieceDiv);
                 }
             }
         }
@@ -307,9 +307,8 @@ class FrontEnd{
         if (targetRow >= 0 && targetRow < this.numRows &&
             targetColumn >= 0 && targetColumn < this.numColumns &&
             !(targetRow === this.selected.row && targetColumn === this.selected.column)){
-            let targetSquare = this.getSquare({row: targetRow, column: targetColumn});
-            BACK_END.executeMove({rank: this.getReal(this.selected.row), file: this.selected.column},
-                                 {rank: this.getReal(targetRow), file: targetColumn});
+            let targetSquare = this.getSquare(targetRow, targetColumn);
+            BACK_END.executeMove(this.getReal(this.selected.row), this.selected.column, this.getReal(targetRow), targetColumn);
             this.selected.square.removeChild(this.selected.piece);
             if (targetSquare.hasChildNodes()){
                 targetSquare.removeChild(targetSquare.firstChild);
@@ -318,14 +317,14 @@ class FrontEnd{
         }
     }
 
-    getSquare(square){
-        return this.board.childNodes[square.row * this.numColumns + square.column];
+    getSquare(row, column){
+        return this.board.childNodes[row * this.numColumns + column];
     }
 
     getReal(r){
         let result = r;
         if (this.isWhiteOnBottom){
-            result = this.numRows - result - 1;
+            result = this.numRows - r - 1;
         }
         return result;
     }
