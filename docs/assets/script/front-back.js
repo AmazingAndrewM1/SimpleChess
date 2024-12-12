@@ -129,31 +129,17 @@ class BackEnd{
         return this.getSquare(square.rank + direction.dy, square.file + direction.dx);
     }
 
-    getMoves(row, column){
-        let realRank = row;
-        let file = column;
-        if (FRONT_END.isWhiteOnBottom){
-            realRank = FRONT_END.numRows - row - 1;
-        }
-
-        let square = this.getSquare(realRank, file);
+    getMoves(from){
+        let square = this.getSquare(from.rank, from.file);
         return square.getPiece().getPseudoLegalMoves(square);
     }
 
     executeMove(from, to){
-        let fromSquare = this.getSquare(this.getRank(from.row), from.column);
-        let toSquare = this.getSquare(this.getRank(to.row), to.column);
+        let fromSquare = this.getSquare(from.rank, from.file);
+        let toSquare = this.getSquare(to.rank, to.file);
 
         toSquare.setPiece(fromSquare.getPiece());
         fromSquare.setPiece(null);
-    }
-
-    getRank(row){
-        let rank = row;
-        if (this.isWhiteOnBottom){
-            rank = FRONT_END.numRows - row - 1;
-        }
-        return rank;
     }
 }
 
@@ -207,13 +193,14 @@ class FrontEnd{
 
         for (let rank = Ranks.ONE; rank <= Ranks.EIGHT; ++rank){
             for (let file = Files.A; file <= Files.H; ++file){
-                if (BACK_END.getSquare(rank, file).getPiece() !== null){
-                    let piece = BACK_END.getSquare(rank, file).getPiece();
+                let square = BACK_END.getSquare(rank, file);
+                let piece = square.getPiece();
+                if (piece !== null){
                     let pieceDiv = document.createElement("div");
                     pieceDiv.classList.add("sprite", Piece.Color.getString(piece.getColor()), Piece.Type.getString(piece.getType()));
                     pieceDiv.role = "img"; /* Console warning for accessibility otherwise */
                     pieceDiv.ariaLabel = `${Piece.Color.getString(piece.getColor())} ${Piece.Type.getString(piece.getType())}`;
-                    this.getSquare(rank, file).appendChild(pieceDiv);
+                    this.getSquare({row: this.getReal(square.rank), column: square.file}).appendChild(pieceDiv);
                 }
             }
         }
@@ -225,16 +212,6 @@ class FrontEnd{
         document.addEventListener("mousedown", (event) => this.handleMouseDown(event));
         document.addEventListener("mousemove", (event) => this.handleMouseMove(event));
         document.addEventListener("mouseup", (event) => this.handleMouseUp(event));
-    }
-
-    getSquare(rank, file){
-        let r = rank - Ranks.ONE;
-        let c = file - Files.A;
-        if (this.isWhiteOnBottom){
-            r = this.numRows - r - 1;
-        }
-
-        return this.board.childNodes[r * this.numColumns + c];
     }
 
     /*  
@@ -278,7 +255,7 @@ class FrontEnd{
         this.selected.piece.style.transform = "translate(0px, 0px)";
         this.selected.piece.classList.add("selected");
 
-        let moves = BACK_END.getMoves(row, column);
+        let moves = BACK_END.getMoves({rank: this.getReal(this.selected.row), file: this.selected.column});
         console.log(moves);
 
         this.isMouseDown = true;
@@ -330,9 +307,9 @@ class FrontEnd{
         if (targetRow >= 0 && targetRow < this.numRows &&
             targetColumn >= 0 && targetColumn < this.numColumns &&
             !(targetRow === this.selected.row && targetColumn === this.selected.column)){
-            let targetSquare = this.getSquare(targetRow, targetColumn);
-            BACK_END.executeMove({row: this.selected.row, column: this.selected.column},
-                                 {row: targetRow, column: targetColumn});
+            let targetSquare = this.getSquare({row: targetRow, column: targetColumn});
+            BACK_END.executeMove({rank: this.getReal(this.selected.row), file: this.selected.column},
+                                 {rank: this.getReal(targetRow), file: targetColumn});
             this.selected.square.removeChild(this.selected.piece);
             if (targetSquare.hasChildNodes()){
                 targetSquare.removeChild(targetSquare.firstChild);
@@ -341,12 +318,16 @@ class FrontEnd{
         }
     }
 
-    getRank(rank){
-        let r = rank;
+    getSquare(square){
+        return this.board.childNodes[square.row * this.numColumns + square.column];
+    }
+
+    getReal(r){
+        let result = r;
         if (this.isWhiteOnBottom){
-            r = this.numRows - r - 1;
+            result = this.numRows - result - 1;
         }
-        return r;
+        return result;
     }
 }
 
