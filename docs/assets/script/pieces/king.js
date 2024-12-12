@@ -1,17 +1,21 @@
 import Piece, {BACK_END} from "./piece.js";
-import {Bishop, Rook} from "./piece-module.js";
 
 class King extends Piece{
     constructor(color){
         super(Piece.Type.KING, color);
     }
 
-    static getCaptureDirections(){  // The directions of bishop and rook are the same as king.
-        let directions = Bishop.getCaptureDirections();
-        for (const DIRECTION of Rook.getCaptureDirections()){
-            directions.push(DIRECTION);
-        }
-        return directions;
+    static getCaptureDirections(){
+        return [
+            {dx: 0, dy: 1},
+            {dx: 1, dy: 1},
+            {dx: 1, dy: 0},
+            {dx: 1, dy: -1},
+            {dx: 0, dy: -1},
+            {dx: -1, dy: -1},
+            {dx: -1, dy: 0},
+            {dx: -1, dy: 1}
+        ];
     }
 
     getPseudoLegalMoves(from){

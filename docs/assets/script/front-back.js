@@ -121,6 +121,8 @@ class BackEnd{
     /**
      * @param {Square} square - the current square
      * @param {Object} direction - the direction to perform the transformation
+     * @param {number} direction.dx - direction in change of file
+     * @param {number} direction.dy - direction in change of rank
      * @returns {Square | null} the square after the transformation and null if the corresponding square would not exist on the standard 8x8 chessboard.
      */
     getTransposed(square, direction){
@@ -139,8 +141,19 @@ class BackEnd{
     }
 
     executeMove(from, to){
-        this.getSquare(to.rank, to.file).setPiece(this.getSquare(from.rank, from.file).getPiece());
-        this.getSquare(from.rank, from.file).setPiece(null);
+        let fromSquare = this.getSquare(this.getRank(from.row), from.column);
+        let toSquare = this.getSquare(this.getRank(to.row), to.column);
+
+        toSquare.setPiece(fromSquare.getPiece());
+        fromSquare.setPiece(null);
+    }
+
+    getRank(row){
+        let rank = row;
+        if (this.isWhiteOnBottom){
+            rank = FRONT_END.numRows - row - 1;
+        }
+        return rank;
     }
 }
 
@@ -200,7 +213,7 @@ class FrontEnd{
                     pieceDiv.classList.add("sprite", Piece.Color.getString(piece.getColor()), Piece.Type.getString(piece.getType()));
                     pieceDiv.role = "img"; /* Console warning for accessibility otherwise */
                     pieceDiv.ariaLabel = `${Piece.Color.getString(piece.getColor())} ${Piece.Type.getString(piece.getType())}`;
-                    this.board.childNodes[this.getIndex(rank, file)].appendChild(pieceDiv);
+                    this.getSquare(rank, file).appendChild(pieceDiv);
                 }
             }
         }
@@ -214,14 +227,14 @@ class FrontEnd{
         document.addEventListener("mouseup", (event) => this.handleMouseUp(event));
     }
 
-    getIndex(rank, file){
-        let r = rank;
-        let c = file;
+    getSquare(rank, file){
+        let r = rank - Ranks.ONE;
+        let c = file - Files.A;
         if (this.isWhiteOnBottom){
             r = this.numRows - r - 1;
         }
 
-        return r * this.numColumns + c;
+        return this.board.childNodes[r * this.numColumns + c];
     }
 
     /*  
@@ -317,11 +330,10 @@ class FrontEnd{
         if (targetRow >= 0 && targetRow < this.numRows &&
             targetColumn >= 0 && targetColumn < this.numColumns &&
             !(targetRow === this.selected.row && targetColumn === this.selected.column)){
-            BACK_END.executeMove({rank: this.getRank(this.selected.row), file: this.selected.column}, 
-                                 {rank: this.getRank(targetRow), file: targetColumn});
-
+            let targetSquare = this.getSquare(targetRow, targetColumn);
+            BACK_END.executeMove({row: this.selected.row, column: this.selected.column},
+                                 {row: targetRow, column: targetColumn});
             this.selected.square.removeChild(this.selected.piece);
-            let targetSquare = this.board.childNodes[targetRow * this.numRows + targetColumn];
             if (targetSquare.hasChildNodes()){
                 targetSquare.removeChild(targetSquare.firstChild);
             }

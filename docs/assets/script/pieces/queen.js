@@ -1,5 +1,5 @@
-import Piece, {BACK_END} from "./piece.js";
-import {Bishop, Rook, King} from "./piece-module.js";
+import Piece from "./piece.js";
+import {Knight, Bishop, King} from "./piece-module.js";
 
 class Queen extends Piece{
     constructor(color){
