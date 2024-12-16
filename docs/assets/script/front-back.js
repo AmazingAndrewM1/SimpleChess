@@ -146,6 +146,7 @@ class BackEnd{
 class FrontEnd{
     constructor(){
         this.board = document.getElementById("board");
+        this.moveOptionDivs = [];
         this.numRows = 8;
         this.numColumns = 8;
         this.numSquares = this.numRows * this.numColumns;
@@ -169,6 +170,7 @@ class FrontEnd{
                 }
                 let moveOptionDiv = document.createElement("div");
                 moveOptionDiv.classList.add("move-option", "hide");
+                this.moveOptionDivs.push(moveOptionDiv);
                 square.appendChild(moveOptionDiv);
                 this.board.appendChild(square);
                 isLight = !isLight;
@@ -297,16 +299,17 @@ class FrontEnd{
         this.hasMadeMove = this.isDragging;
     }
 
-    showMoves(moves){
-        for (const MOVE_OPTION_DIV of this.board.getElementsByClassName("move-option")){
-            MOVE_OPTION_DIV.classList.remove("show");
-            MOVE_OPTION_DIV.classList.add("hide");
+    hideMoves(){
+        for (const MOVE_OPTION_DIV of this.moveOptionDivs){
+            MOVE_OPTION_DIV.classList.replace("show", "hide");
         }
+    }
+
+    showMoves(moves){
         for (const SQUARE of moves){
             let square = this.getSquare(this.getReal(SQUARE.rank), SQUARE.file);
             let moveOptionDiv = square.getElementsByClassName("move-option")[0];
-            moveOptionDiv.classList.remove("hide");
-            moveOptionDiv.classList.add("show");
+            moveOptionDiv.classList.replace("hide", "show");
         }
     }
 
@@ -320,14 +323,16 @@ class FrontEnd{
         this.selected.square.classList.remove("highlighted");
         this.selected.piece.classList.remove("selected");
         this.selected.piece.removeAttribute("style");
+        this.hideMoves();
         if (targetRow >= 0 && targetRow < this.numRows &&
             targetColumn >= 0 && targetColumn < this.numColumns &&
             !(targetRow === this.selected.row && targetColumn === this.selected.column)){
             let targetSquare = this.getSquare(targetRow, targetColumn);
             BACK_END.executeMove(this.getReal(this.selected.row), this.selected.column, this.getReal(targetRow), targetColumn);
             this.selected.square.removeChild(this.selected.piece);
-            if (targetSquare.hasChildNodes()){
-                targetSquare.removeChild(targetSquare.firstChild);
+            let targetPieces = targetSquare.getElementsByClassName("sprite");
+            if (targetPieces.length > 0){
+                targetSquare.removeChild(targetPieces[0]);
             }
             targetSquare.appendChild(this.selected.piece);
         }
