@@ -101,6 +101,10 @@ class Piece{
     getPseudoLegalMoves(from){
         return [];
     }
+
+    updateState(){
+        this.hasMoved = true;
+    }
 }
 
 export default Piece;

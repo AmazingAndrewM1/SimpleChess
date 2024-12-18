@@ -81,6 +81,11 @@ class BackEnd{
         this.getSquare(Ranks.EIGHT, Files.F).setPiece(new Bishop(Piece.Color.BLACK));
         this.getSquare(Ranks.EIGHT, Files.G).setPiece(new Knight(Piece.Color.BLACK));
         this.getSquare(Ranks.EIGHT, Files.H).setPiece(new Rook(Piece.Color.BLACK));
+
+        this.possibleSquares = [];
+        this.colorToMove = Piece.Color.WHITE;
+        this.fromSquare = null;
+        this.toSquare = null;
     }
 
     printDebug(){
@@ -129,9 +134,23 @@ class BackEnd{
         return this.getSquare(square.rank + direction.dy, square.file + direction.dx);
     }
 
-    getMoves(rank, file){
-        let square = this.getSquare(rank, file);
-        return square.getPiece().getPseudoLegalMoves(square);
+    /* The square specified by rank and file should have a piece on that square, so null check should not be necessary. */
+    setFromSquare(rank, file){
+        this.fromSquare = this.getSquare(rank, file);
+        if (this.fromSquare.getPiece().getColor() === this.colorToMove){
+            this.possibleSquares = this.fromSquare.getPiece().getPseudoLegalMoves(this.fromSquare);
+        }
+        else{
+            this.possibleSquares = [];
+        }
+    }
+
+    setToSquare(rank, file){
+        this.toSquare = this.getSquare(rank, file);
+    }
+
+    getMoves(){
+        return this.possibleSquares;
     }
 
     executeMove(fromRank, fromFile, toRank, toFile){
@@ -140,6 +159,8 @@ class BackEnd{
 
         toSquare.setPiece(fromSquare.getPiece());
         fromSquare.setPiece(null);
+
+        toSquare.getPiece().updateState();
     }
 }
 
@@ -260,8 +281,8 @@ class FrontEnd{
         this.selected.piece.style.transform = "translate(0px, 0px)";
         this.selected.piece.classList.add("selected");
 
-        let moves = BACK_END.getMoves(this.getReal(row), column);
-        this.showMoves(moves);
+        BACK_END.setFromSquare(this.getReal(row), column);
+        this.showMoves(BACK_END.getMoves());
 
         this.isMouseDown = true;
         this.isDragging = false;
@@ -327,9 +348,9 @@ class FrontEnd{
         if (targetRow >= 0 && targetRow < this.numRows &&
             targetColumn >= 0 && targetColumn < this.numColumns &&
             !(targetRow === this.selected.row && targetColumn === this.selected.column)){
-            let targetSquare = this.getSquare(targetRow, targetColumn);
             BACK_END.executeMove(this.getReal(this.selected.row), this.selected.column, this.getReal(targetRow), targetColumn);
             this.selected.square.removeChild(this.selected.piece);
+            let targetSquare = this.getSquare(targetRow, targetColumn);
             let targetPieces = targetSquare.getElementsByClassName("sprite");
             if (targetPieces.length > 0){
                 targetSquare.removeChild(targetPieces[0]);
