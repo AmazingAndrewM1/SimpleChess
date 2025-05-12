@@ -86,6 +86,7 @@ class BackEnd{
         this.colorToMove = Piece.Color.WHITE;
         this.fromSquare = null;
         this.toSquare = null;
+        this.isValid = false;
     }
 
     printDebug(){
@@ -134,33 +135,30 @@ class BackEnd{
         return this.getSquare(square.rank + direction.dy, square.file + direction.dx);
     }
 
-    /* The square specified by rank and file should have a piece on that square, so null check should not be necessary. */
+    /* The square specified by row and column should have a piece on that square, so null check should not be necessary. */
     setFromSquare(rank, file){
         this.fromSquare = this.getSquare(rank, file);
+        this.possibleSquares = [];
         if (this.fromSquare.getPiece().getColor() === this.colorToMove){
             this.possibleSquares = this.fromSquare.getPiece().getPseudoLegalMoves(this.fromSquare);
-        }
-        else{
-            this.possibleSquares = [];
         }
     }
 
     setToSquare(rank, file){
         this.toSquare = this.getSquare(rank, file);
+        this.isValid = this.possibleSquares.includes(this.toSquare);
     }
 
     getMoves(){
         return this.possibleSquares;
     }
 
-    executeMove(fromRank, fromFile, toRank, toFile){
-        let fromSquare = this.getSquare(fromRank, fromFile);
-        let toSquare = this.getSquare(toRank, toFile);
+    executeMove(){
+        this.toSquare.setPiece(this.fromSquare.getPiece());
+        this.fromSquare.setPiece(null);
 
-        toSquare.setPiece(fromSquare.getPiece());
-        fromSquare.setPiece(null);
-
-        toSquare.getPiece().updateState();
+        this.toSquare.getPiece().updateState();
+        this.isValid = false;
     }
 }
 
@@ -226,7 +224,7 @@ class FrontEnd{
                     pieceDiv.classList.add("sprite", Piece.Color.getString(piece.getColor()), Piece.Type.getString(piece.getType()));
                     pieceDiv.role = "img"; /* Console warning for accessibility otherwise */
                     pieceDiv.ariaLabel = `${Piece.Color.getString(piece.getColor())} ${Piece.Type.getString(piece.getType())}`;
-                    this.getSquare(this.getReal(square.rank), square.file).appendChild(pieceDiv);
+                    this.getSquare(square.rank, square.file).appendChild(pieceDiv);
                 }
             }
         }
@@ -254,7 +252,7 @@ class FrontEnd{
         event.preventDefault();
         if (this.hasMadeMove === false){
             event.stopPropagation();
-            this.doMove(event);
+            this.tryMove(event);
             this.hasMadeMove = true;
             return;
         }
@@ -269,8 +267,8 @@ class FrontEnd{
         let column = clamp(0, Math.floor(offsetX * this.numColumns / rect.width), this.numColumns - 1);
 
         this.selected = {
-            row: row,
-            column: column,
+            rank: this.getRank(row),
+            file: this.getFile(column),
             square: event.target.parentElement,
             piece: event.target,
             clientX: event.clientX,
@@ -281,7 +279,7 @@ class FrontEnd{
         this.selected.piece.style.transform = "translate(0px, 0px)";
         this.selected.piece.classList.add("selected");
 
-        BACK_END.setFromSquare(this.getReal(row), column);
+        BACK_END.setFromSquare(this.selected.rank, this.selected.file);
         this.showMoves(BACK_END.getMoves());
 
         this.isMouseDown = true;
@@ -315,7 +313,7 @@ class FrontEnd{
             return;
         }
         if (this.isDragging){
-            this.doMove(event);
+            this.tryMove(event);
         }
         this.hasMadeMove = this.isDragging;
     }
@@ -328,13 +326,13 @@ class FrontEnd{
 
     showMoves(moves){
         for (const SQUARE of moves){
-            let square = this.getSquare(this.getReal(SQUARE.rank), SQUARE.file);
+            let square = this.getSquare(SQUARE.rank, SQUARE.file);
             let moveOptionDiv = square.getElementsByClassName("move-option")[0];
             moveOptionDiv.classList.replace("hide", "show");
         }
     }
 
-    doMove(event){
+    tryMove(event){
         let rect = this.board.getBoundingClientRect();
         let offsetX = event.clientX - rect.left;
         let offsetY = event.clientY - rect.top;
@@ -345,12 +343,18 @@ class FrontEnd{
         this.selected.piece.classList.remove("selected");
         this.selected.piece.removeAttribute("style");
         this.hideMoves();
-        if (targetRow >= 0 && targetRow < this.numRows &&
-            targetColumn >= 0 && targetColumn < this.numColumns &&
-            !(targetRow === this.selected.row && targetColumn === this.selected.column)){
-            BACK_END.executeMove(this.getReal(this.selected.row), this.selected.column, this.getReal(targetRow), targetColumn);
-            this.selected.square.removeChild(this.selected.piece);
-            let targetSquare = this.getSquare(targetRow, targetColumn);
+
+        if (targetRow < 0 || targetRow >= this.numRows || targetColumn < 0 || targetColumn >= this.numColumns){
+            return;
+        }
+
+        let targetRank = this.getRank(targetRow);
+        let targetFile = this.getFile(targetColumn);
+
+        BACK_END.setToSquare(targetRank, targetFile);
+        if (BACK_END.isValid){
+            BACK_END.executeMove();
+            let targetSquare = this.getSquare(targetRank, targetFile);
             let targetPieces = targetSquare.getElementsByClassName("sprite");
             if (targetPieces.length > 0){
                 targetSquare.removeChild(targetPieces[0]);
@@ -359,16 +363,25 @@ class FrontEnd{
         }
     }
 
-    getSquare(row, column){
-        return this.board.childNodes[row * this.numColumns + column];
+    getRank(row){
+        let rank = row;
+        if (this.isWhiteOnBottom){
+            rank = this.numRows - rank - 1;
+        }
+        return rank + Ranks.ONE;
     }
 
-    getReal(r){
-        let result = r;
+    getFile(column){
+        return column + Files.A;
+    }
+
+    getSquare(rank, file){
+        let r = row - Ranks.ONE;
+        let c = column - Files.A;
         if (this.isWhiteOnBottom){
-            result = this.numRows - r - 1;
+            r = this.numRows - r - 1;
         }
-        return result;
+        return this.board.childNodes[r * this.numColumns + c];
     }
 }
 
