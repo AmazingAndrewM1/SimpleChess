@@ -159,6 +159,9 @@ class BackEnd{
 
         this.toSquare.getPiece().updateState();
         this.isValid = false;
+
+        this.colorToMove = this.colorToMove === Piece.Color.WHITE ? Piece.Color.BLACK : Piece.Color.WHITE;
+        this.printDebug();
     }
 }
 
@@ -376,8 +379,8 @@ class FrontEnd{
     }
 
     getSquare(rank, file){
-        let r = row - Ranks.ONE;
-        let c = column - Files.A;
+        let r = rank - Ranks.ONE;
+        let c = file - Files.A;
         if (this.isWhiteOnBottom){
             r = this.numRows - r - 1;
         }
