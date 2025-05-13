@@ -161,13 +161,13 @@ class BackEnd{
         this.isValid = false;
 
         this.colorToMove = this.colorToMove === Piece.Color.WHITE ? Piece.Color.BLACK : Piece.Color.WHITE;
-        this.printDebug();
     }
 }
 
 class FrontEnd{
     constructor(){
         this.board = document.getElementById("board");
+        this.turnContainer = document.getElementById("turn-container");
         this.moveOptionDivs = [];
         this.numRows = 8;
         this.numColumns = 8;
@@ -231,6 +231,8 @@ class FrontEnd{
                 }
             }
         }
+
+        this.updateTurnContainer();
 
         /*  
         Explanation of how to mimic a MouseDrag Event with mousedown, mousemove, and mouseup EventListeners:
@@ -321,6 +323,12 @@ class FrontEnd{
         this.hasMadeMove = this.isDragging;
     }
 
+    updateTurnContainer(){
+        let oppositeColor = BACK_END.colorToMove === Piece.Color.WHITE ? Piece.Color.BLACK : Piece.Color.WHITE;
+        this.turnContainer.classList.remove(Piece.Color.getString(oppositeColor));
+        this.turnContainer.classList.add(Piece.Color.getString(BACK_END.colorToMove));
+    }
+
     hideMoves(){
         for (const MOVE_OPTION_DIV of this.moveOptionDivs){
             MOVE_OPTION_DIV.classList.replace("show", "hide");
@@ -363,6 +371,7 @@ class FrontEnd{
                 targetSquare.removeChild(targetPieces[0]);
             }
             targetSquare.appendChild(this.selected.piece);
+            this.updateTurnContainer();
         }
     }
 
