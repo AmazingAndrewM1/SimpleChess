@@ -29,22 +29,25 @@ class King extends Piece{
             }
         }
 
-        if (this.canCastleKingside(from)){
-            console.log("YOU CAN CASTLE KINGSIDE");
+        let kingsideRookSquare = this.getKingsideRookSquare(from);
+        if (kingsideRookSquare !== null){
+            moves.push(kingsideRookSquare);
         }
-        if (this.canCastleQueenside(from)){
-            console.log("YOU CAN CASTLE QUEENSIDE");
+
+        let queensideRookSquare = this.getQueensideRookSquare(from);
+        if (queensideRookSquare !== null){
+            moves.push(queensideRookSquare);
         }
 
         return moves;
     }
 
-    canCastleKingside(kingSquare){
-        return this.canCastle(kingSquare, Files.G, Files.F);
+    getKingsideRookSquare(kingSquare){
+        return this.getRookSquare(kingSquare, Files.G, Files.F);
     }
 
-    canCastleQueenside(kingSquare){
-        return this.canCastle(kingSquare, Files.C, Files.D);
+    getQueensideRookSquare(kingSquare){
+        return this.getRookSquare(kingSquare, Files.C, Files.D);
     }
 
     findRookSquare(kingSquare, kingDestinationFile, rookDestinationFile){
@@ -78,24 +81,24 @@ class King extends Piece{
         return square.file === kingDestinationFile;
     }
 
-    canCastle(kingSquare, kingDestinationFile, rookDestinationFile){
+    getRookSquare(kingSquare, kingDestinationFile, rookDestinationFile){
         if (this.hasMoved){
-            return false;
+            return null;
         }
 
         let rookSquare = this.findRookSquare(kingSquare, kingDestinationFile, rookDestinationFile);
         if (rookSquare === null){
-            return false;
+            return null;
         }
 
         if (!this.isKingPathClear(kingSquare, rookSquare, kingDestinationFile)){
-            return false;
+            return null;
         }
 
         let rookDestinationPiece = BACK_END.getSquare(kingSquare.rank, rookDestinationFile).piece;
-        return rookDestinationPiece === null ||
-               rookDestinationPiece === this ||
-               rookDestinationPiece === rookSquare.piece;
+        return rookDestinationPiece === null || rookDestinationPiece === this || rookDestinationPiece === rookSquare.piece ?
+                rookSquare : 
+                null;
     }
 }
 
