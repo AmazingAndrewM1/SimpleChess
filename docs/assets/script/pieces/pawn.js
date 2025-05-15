@@ -28,18 +28,18 @@ class Pawn extends Piece{
         let forwardDirection = {dx: 0, dy: captureDirections[0].dy};
         
         let forward1Square = BACK_END.getTransposed(from, forwardDirection);
-        if (forward1Square.getPiece() === null){    // Out of bounds check not necessary
+        if (forward1Square.piece === null){    // Out of bounds check not necessary
             moves.push(forward1Square);
         }
 
         let forward2Square = BACK_END.getTransposed(forward1Square, forwardDirection);
-        if (this.hasMoved === false && forward1Square.getPiece() === null && forward2Square.getPiece() === null){   // Out of bounds check not necessary
+        if (this.hasMoved === false && forward1Square.piece === null && forward2Square.piece === null){   // Out of bounds check not necessary
             moves.push(forward2Square);
         }
 
         for (const DIRECTION of captureDirections){
             let captureSquare = BACK_END.getTransposed(from, DIRECTION);
-            if (captureSquare !== null && captureSquare.getPiece() !== null && captureSquare.getPiece().color !== this.color){
+            if (captureSquare !== null && captureSquare.piece !== null && captureSquare.piece.color !== this.color){
                 moves.push(captureSquare);
             }
         }

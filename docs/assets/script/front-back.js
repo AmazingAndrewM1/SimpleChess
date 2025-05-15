@@ -59,28 +59,28 @@ class BackEnd{
             }
         }
 
-        this.getSquare(Ranks.ONE, Files.A).setPiece(new Rook(Piece.Color.WHITE));
-        this.getSquare(Ranks.ONE, Files.B).setPiece(new Knight(Piece.Color.WHITE));
-        this.getSquare(Ranks.ONE, Files.C).setPiece(new Bishop(Piece.Color.WHITE));
-        this.getSquare(Ranks.ONE, Files.D).setPiece(new Queen(Piece.Color.WHITE));
-        this.getSquare(Ranks.ONE, Files.E).setPiece(new King(Piece.Color.WHITE));
-        this.getSquare(Ranks.ONE, Files.F).setPiece(new Bishop(Piece.Color.WHITE));
-        this.getSquare(Ranks.ONE, Files.G).setPiece(new Knight(Piece.Color.WHITE));
-        this.getSquare(Ranks.ONE, Files.H).setPiece(new Rook(Piece.Color.WHITE));
+        this.getSquare(Ranks.ONE, Files.A).piece = new Rook(Piece.Color.WHITE);
+        this.getSquare(Ranks.ONE, Files.B).piece = new Knight(Piece.Color.WHITE);
+        this.getSquare(Ranks.ONE, Files.C).piece = new Bishop(Piece.Color.WHITE);
+        this.getSquare(Ranks.ONE, Files.D).piece = new Queen(Piece.Color.WHITE);
+        this.getSquare(Ranks.ONE, Files.E).piece = new King(Piece.Color.WHITE);
+        this.getSquare(Ranks.ONE, Files.F).piece = new Bishop(Piece.Color.WHITE);
+        this.getSquare(Ranks.ONE, Files.G).piece = new Knight(Piece.Color.WHITE);
+        this.getSquare(Ranks.ONE, Files.H).piece = new Rook(Piece.Color.WHITE);
 
         for (let file = Files.A; file <= Files.H; ++file){
-            this.getSquare(Ranks.TWO, file).setPiece(new Pawn(Piece.Color.WHITE));
-            this.getSquare(Ranks.SEVEN, file).setPiece(new Pawn(Piece.Color.BLACK));
+            this.getSquare(Ranks.TWO, file).piece = new Pawn(Piece.Color.WHITE);
+            this.getSquare(Ranks.SEVEN, file).piece = new Pawn(Piece.Color.BLACK);
         }
 
-        this.getSquare(Ranks.EIGHT, Files.A).setPiece(new Rook(Piece.Color.BLACK));
-        this.getSquare(Ranks.EIGHT, Files.B).setPiece(new Knight(Piece.Color.BLACK));
-        this.getSquare(Ranks.EIGHT, Files.C).setPiece(new Bishop(Piece.Color.BLACK));
-        this.getSquare(Ranks.EIGHT, Files.D).setPiece(new Queen(Piece.Color.BLACK));
-        this.getSquare(Ranks.EIGHT, Files.E).setPiece(new King(Piece.Color.BLACK));
-        this.getSquare(Ranks.EIGHT, Files.F).setPiece(new Bishop(Piece.Color.BLACK));
-        this.getSquare(Ranks.EIGHT, Files.G).setPiece(new Knight(Piece.Color.BLACK));
-        this.getSquare(Ranks.EIGHT, Files.H).setPiece(new Rook(Piece.Color.BLACK));
+        this.getSquare(Ranks.EIGHT, Files.A).piece = new Rook(Piece.Color.BLACK);
+        this.getSquare(Ranks.EIGHT, Files.B).piece = new Knight(Piece.Color.BLACK);
+        this.getSquare(Ranks.EIGHT, Files.C).piece = new Bishop(Piece.Color.BLACK);
+        this.getSquare(Ranks.EIGHT, Files.D).piece = new Queen(Piece.Color.BLACK);
+        this.getSquare(Ranks.EIGHT, Files.E).piece = new King(Piece.Color.BLACK);
+        this.getSquare(Ranks.EIGHT, Files.F).piece = new Bishop(Piece.Color.BLACK);
+        this.getSquare(Ranks.EIGHT, Files.G).piece = new Knight(Piece.Color.BLACK);
+        this.getSquare(Ranks.EIGHT, Files.H).piece = new Rook(Piece.Color.BLACK);
 
         this.possibleSquares = [];
         this.colorToMove = Piece.Color.WHITE;
@@ -97,11 +97,11 @@ class BackEnd{
                 if (square === null){
                     output += "- ";
                 }
-                else if (square.getPiece() === null){
+                else if (square.piece === null){
                     output += ". ";
                 }
                 else{
-                    output += Piece.getChar(square.getPiece()) + " ";
+                    output += Piece.getChar(square.piece) + " ";
                 }
             }
             output += "\n";
@@ -139,8 +139,8 @@ class BackEnd{
     setFromSquare(rank, file){
         this.fromSquare = this.getSquare(rank, file);
         this.possibleSquares = [];
-        if (this.fromSquare.getPiece().color === this.colorToMove){
-            this.possibleSquares = this.fromSquare.getPiece().getPseudoLegalMoves(this.fromSquare);
+        if (this.fromSquare.piece.color === this.colorToMove){
+            this.possibleSquares = this.fromSquare.piece.getPseudoLegalMoves(this.fromSquare);
         }
     }
 
@@ -154,10 +154,10 @@ class BackEnd{
     }
 
     executeMove(){
-        this.toSquare.setPiece(this.fromSquare.getPiece());
-        this.fromSquare.setPiece(null);
+        this.toSquare.piece = this.fromSquare.piece;
+        this.fromSquare.piece = null;
 
-        this.toSquare.getPiece().updateState();
+        this.toSquare.piece.updateState();
         this.isValid = false;
 
         this.colorToMove = this.colorToMove === Piece.Color.WHITE ? Piece.Color.BLACK : Piece.Color.WHITE;
@@ -221,7 +221,7 @@ class FrontEnd{
         for (let rank = Ranks.ONE; rank <= Ranks.EIGHT; ++rank){
             for (let file = Files.A; file <= Files.H; ++file){
                 let square = BACK_END.getSquare(rank, file);
-                let piece = square.getPiece();
+                let piece = square.piece;
                 if (piece !== null){
                     let pieceDiv = document.createElement("div");
                     pieceDiv.classList.add("sprite", Piece.Color.getString(piece.color), Piece.Type.getString(piece.type));
