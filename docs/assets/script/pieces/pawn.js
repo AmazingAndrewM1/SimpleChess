@@ -39,7 +39,7 @@ class Pawn extends Piece{
 
         for (const DIRECTION of captureDirections){
             let captureSquare = BACK_END.getTransposed(from, DIRECTION);
-            if (captureSquare !== null && captureSquare.getPiece() !== null && captureSquare.getPiece().getColor() !== this.color){
+            if (captureSquare !== null && captureSquare.getPiece() !== null && captureSquare.getPiece().color !== this.color){
                 moves.push(captureSquare);
             }
         }

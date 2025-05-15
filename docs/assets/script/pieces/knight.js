@@ -23,7 +23,7 @@ export class Knight extends Piece{
 
         for (const DIRECTION of Knight.getCaptureDirections()){
             let square = BACK_END.getTransposed(from, DIRECTION);
-            if (square !== null && (square.getPiece() === null || square.getPiece().getColor() !== this.color)){
+            if (square !== null && (square.getPiece() === null || square.getPiece().color !== this.color)){
                 moves.push(square);
             }
         }

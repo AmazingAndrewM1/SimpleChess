@@ -23,7 +23,7 @@ export class Rook extends Piece{
                 moves.push(square);
                 square = BACK_END.getTransposed(square, DIRECTION);
             }
-            if (square !== null && square.getPiece().getColor() !== this.color){
+            if (square !== null && square.getPiece().color !== this.color){
                 moves.push(square);
             }
         }

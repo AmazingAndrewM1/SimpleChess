@@ -6,7 +6,8 @@ const Files = Object.freeze({
     E: 5,
     F: 6,
     G: 7,
-    H: 8
+    H: 8,
+    NONE: 9
 });
 
 const Ranks = Object.freeze({
@@ -17,7 +18,8 @@ const Ranks = Object.freeze({
     FIVE: 5,
     SIX: 6,
     SEVEN: 7,
-    EIGHT: 8
+    EIGHT: 8,
+    NONE: 9
 });
 
 export {Files, Ranks};

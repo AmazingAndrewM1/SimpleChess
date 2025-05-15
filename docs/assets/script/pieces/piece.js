@@ -44,7 +44,7 @@ class Piece{
 
     static getChar(piece){
         let charCode = 0;
-        switch (piece.getType()){
+        switch (piece.type){
             case Piece.Type.KING:
                 charCode = "k".charCodeAt(0);
                 break;
@@ -67,7 +67,7 @@ class Piece{
                 throw new Error("Piece type not in list");
         }
 
-        if (piece.getColor() === Piece.Color.WHITE){
+        if (piece.color === Piece.Color.WHITE){
             charCode -= 32;
         }
 
@@ -75,21 +75,21 @@ class Piece{
     }
 
     constructor(type, color){
-        this.hasMoved = false;
-        this.color = color;
-        this.type = type;
+        this._hasMoved = false;
+        this._color = color;
+        this._type = type;
     }
 
-    hasMoved(){
-        return this.hasMoved;
+    get hasMoved(){
+        return this._hasMoved;
     }
 
-    getType(){
-        return this.type;
+    get type(){
+        return this._type;
     }
 
-    getColor(){
-        return this.color;
+    get color(){
+        return this._color;
     }
 
     /**
@@ -103,7 +103,7 @@ class Piece{
     }
 
     updateState(){
-        this.hasMoved = true;
+        this._hasMoved = true;
     }
 }
 

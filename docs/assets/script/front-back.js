@@ -139,7 +139,7 @@ class BackEnd{
     setFromSquare(rank, file){
         this.fromSquare = this.getSquare(rank, file);
         this.possibleSquares = [];
-        if (this.fromSquare.getPiece().getColor() === this.colorToMove){
+        if (this.fromSquare.getPiece().color === this.colorToMove){
             this.possibleSquares = this.fromSquare.getPiece().getPseudoLegalMoves(this.fromSquare);
         }
     }
@@ -224,15 +224,15 @@ class FrontEnd{
                 let piece = square.getPiece();
                 if (piece !== null){
                     let pieceDiv = document.createElement("div");
-                    pieceDiv.classList.add("sprite", Piece.Color.getString(piece.getColor()), Piece.Type.getString(piece.getType()));
+                    pieceDiv.classList.add("sprite", Piece.Color.getString(piece.color), Piece.Type.getString(piece.type));
                     pieceDiv.role = "img"; /* Console warning for accessibility otherwise */
-                    pieceDiv.ariaLabel = `${Piece.Color.getString(piece.getColor())} ${Piece.Type.getString(piece.getType())}`;
+                    pieceDiv.ariaLabel = `${Piece.Color.getString(piece.color)} ${Piece.Type.getString(piece.type)}`;
                     this.getSquare(square.rank, square.file).appendChild(pieceDiv);
                 }
             }
         }
 
-        this.updateTurnContainer();
+        this.turnContainer.classList.add(Piece.Color.getString(BACK_END.colorToMove));
 
         /*  
         Explanation of how to mimic a MouseDrag Event with mousedown, mousemove, and mouseup EventListeners:
@@ -325,8 +325,7 @@ class FrontEnd{
 
     updateTurnContainer(){
         let oppositeColor = BACK_END.colorToMove === Piece.Color.WHITE ? Piece.Color.BLACK : Piece.Color.WHITE;
-        this.turnContainer.classList.remove(Piece.Color.getString(oppositeColor));
-        this.turnContainer.classList.add(Piece.Color.getString(BACK_END.colorToMove));
+        this.turnContainer.classList.replace(Piece.Color.getString(oppositeColor), Piece.Color.getString(BACK_END.colorToMove));
     }
 
     hideMoves(){
