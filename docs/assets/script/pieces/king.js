@@ -47,46 +47,55 @@ class King extends Piece{
         return this.canCastle(kingSquare, Files.C, Files.D);
     }
 
-    canCastle(kingSquare, kingDestinationFile, rookDestinationFile){
-        if (this.hasMoved){
-            return false;
-        }
-
-        // First, locate the castling rook.
+    findRookSquare(kingSquare, kingDestinationFile, rookDestinationFile){
         const ROOK_DIRECTION = {dx: Math.sign(kingDestinationFile - rookDestinationFile), dy: 0};
         let rookSquare = BACK_END.getTransposed(kingSquare, ROOK_DIRECTION);
         while (rookSquare !== null && rookSquare.getPiece() === null){
             rookSquare = BACK_END.getTransposed(rookSquare, ROOK_DIRECTION);
         }
         if (rookSquare === null){
-            return false;
+            return null;
         }
-        let rook = rookSquare.getPiece();
-        if (rook.hasMoved || 
-            rook.color !== this.color || 
-            rook.type !== Piece.Type.ROOK){
+        let maybeRook = rookSquare.getPiece();
+        return maybeRook.hasMoved === false && maybeRook.color === this.color && maybeRook.type === Piece.Type.ROOK ? 
+                rookSquare:
+                null;
+    }
+
+    isKingPathClear(kingSquare, rookSquare, kingDestinationFile){
+        if (kingSquare.file === kingDestinationFile ||
+            rookSquare.file === kingDestinationFile ||
+            kingSquare.file < kingDestinationFile === kingDestinationFile < rookSquare.file){
+            return true;
+        }
+
+        const SCAN_DIRECTION = {dx: Math.sign(kingDestinationFile - kingSquare.file), dy: 0};
+        let startSquare = Math.abs(kingDestinationFile - kingSquare.file) < Math.abs(kingDestinationFile - rookSquare.file) ? kingSquare : rookSquare;
+        let square = BACK_END.getTransposed(startSquare, SCAN_DIRECTION);
+        while (square.file !== kingDestinationFile && square.getPiece() === null){
+            square = BACK_END.getTransposed(square, SCAN_DIRECTION);
+        }
+        return square.file === kingDestinationFile;
+    }
+
+    canCastle(kingSquare, kingDestinationFile, rookDestinationFile){
+        if (this.hasMoved){
             return false;
         }
 
-        // Second, determine if path is clear for king and rook
-        kingSquare.setPiece(null);
-        rookSquare.setPiece(null);
-        let isKingPathClear = kingSquare.file === kingDestinationFile ||
-                              rookSquare.file === kingDestinationFile ||
-                              kingSquare.file < kingDestinationFile === kingDestinationFile < rookSquare.file;
-        if (!isKingPathClear){
-            const SCAN_DIRECTION = {dx: Math.sign(kingDestinationFile - kingSquare.file), dy: 0};
-            let startSquare = Math.abs(kingDestinationFile - kingSquare.file) < Math.abs(kingDestinationFile - rookSquare.file) ? kingSquare : rookSquare;
-            let square = BACK_END.getTransposed(startSquare, SCAN_DIRECTION);
-            while (!isKingPathClear && square.getPiece() === null){
-                isKingPathClear = square.file === Files.G;
-                square = BACK_END.getTransposed(square, SCAN_DIRECTION);
-            }
+        let rookSquare = findRookSquare(kingSquare, kingDestinationFile, rookDestinationFile);
+        if (rookSquare === null){
+            return false;
         }
-        let isRookPathClear = BACK_END.getSquare(kingSquare.rank, rookDestinationFile).getPiece() === null;
-        kingSquare.setPiece(this);
-        rookSquare.setPiece(rook);
-        return isKingPathClear && isRookPathClear;
+
+        if (!isKingPathClear(kingSquare, rookSquare, kingDestinationFile)){
+            return false;
+        }
+
+        let rookDestinationPiece = BACK_END.getSquare(kingSquare.rank, rookDestinationFile).getPiece();
+        return rookDestinationPiece === null ||
+               rookDestinationPiece === this ||
+               rookDestinationPiece === rookSquare.getPiece();
     }
 }
 

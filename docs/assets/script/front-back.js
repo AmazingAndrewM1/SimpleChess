@@ -32,14 +32,14 @@ class Square{
     /**
      * @returns {Piece | null}
      */
-    getPiece(){
+    get piece(){
         return this.#piece;
     }
 
     /**
      * @param {Piece} piece 
      */
-    setPiece(piece){
+    set piece(piece){
         this.#piece = piece;
     }
 }
