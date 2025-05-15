@@ -191,7 +191,7 @@ class FrontEnd{
                     square.classList.add("dark");
                 }
                 let moveOptionDiv = document.createElement("div");
-                moveOptionDiv.classList.add("move-option", "hide");
+                moveOptionDiv.classList.add("move-option-container", "hide");
                 this.moveOptionDivs.push(moveOptionDiv);
                 square.appendChild(moveOptionDiv);
                 this.board.appendChild(square);
@@ -337,7 +337,7 @@ class FrontEnd{
     showMoves(moves){
         for (const SQUARE of moves){
             let square = this.getSquare(SQUARE.rank, SQUARE.file);
-            let moveOptionDiv = square.getElementsByClassName("move-option")[0];
+            let moveOptionDiv = square.getElementsByClassName("move-option-container")[0];
             moveOptionDiv.classList.replace("hide", "show");
         }
     }
