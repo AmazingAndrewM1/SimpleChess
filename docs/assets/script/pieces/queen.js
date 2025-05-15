@@ -1,7 +1,6 @@
-import Piece from "./piece.js";
-import {Bishop, Rook, King} from "./piece-module.js";
+import {Piece, SlidingPiece, King} from "./piece-module.js";
 
-class Queen extends Piece{
+class Queen extends SlidingPiece{
     constructor(color){
         super(Piece.Type.QUEEN, color);
     }
@@ -11,11 +10,7 @@ class Queen extends Piece{
     }
 
     getPseudoLegalMoves(from){
-        let moves = new Bishop(this.color).getPseudoLegalMoves(from);
-        for (const SQUARE of new Rook(this.color).getPseudoLegalMoves(from)){
-            moves.push(SQUARE);
-        }
-        return moves;
+        return super.getPseudoLegalMoves(from);
     }
 }
 

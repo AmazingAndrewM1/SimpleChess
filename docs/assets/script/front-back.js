@@ -21,16 +21,17 @@ function clamp(min, val, max){
 }
 
 class Square{
-    #piece = null;
+    static NONE = new Square(Ranks.NONE, Files.NONE);
+    #piece = Piece.NONE;
 
     constructor(rank, file){
         this.rank = rank;
         this.file = file;
-        this.#piece = null;
+        this.#piece = Piece.NONE;
     }
 
     /**
-     * @returns {Piece | null}
+     * @returns {Piece}
      */
     get piece(){
         return this.#piece;
@@ -47,15 +48,15 @@ class Square{
 class BackEnd{
     #numRows = 12;
     #numColumns = 10;
-    #numSquares = this.#numRows * this.#numColumns;
+    #updatedSquares = [];
 
     constructor(){
-        this.board = new Array(this.#numSquares);
-        this.board.fill(null);
+        this.board = new Array(this.#numRows * this.#numColumns);
+        this.board.fill(Square.NONE);
 
         for (let rank = Ranks.ONE; rank <= Ranks.EIGHT; ++rank){
             for (let file = Files.A; file <= Files.H; ++file){
-                this.createSquare(rank, file);
+                this.board[this.getIndex(rank, file)] = new Square(rank, file);
             }
         }
 
@@ -84,8 +85,8 @@ class BackEnd{
 
         this.possibleSquares = [];
         this.colorToMove = Piece.Color.WHITE;
-        this.fromSquare = null;
-        this.toSquare = null;
+        this.fromSquare = Square.NONE;
+        this.toSquare = Square.NONE;
         this.isValid = false;
     }
 
@@ -94,10 +95,10 @@ class BackEnd{
         for (let r = 0; r < this.#numRows; ++r){
             for (let c = 0; c < this.#numColumns; ++c){
                 let square = this.board[r * this.#numColumns + c];
-                if (square === null){
+                if (square === Square.NONE){
                     output += "- ";
                 }
-                else if (square.piece === null){
+                else if (square.piece === Piece.NONE){
                     output += ". ";
                 }
                 else{
@@ -109,19 +110,15 @@ class BackEnd{
         console.log(output);
     }
 
-    getSquare(rank, file){
+    getIndex(rank, file){
         const OFFSET = 21;
         let r = rank - Ranks.ONE;
         let c = file - Files.A;
-        return this.board[OFFSET + r * this.#numColumns + c];
+        return r * this.#numColumns + c + OFFSET;
     }
 
-    createSquare(rank, file){
-        /* Cannot use getSquare because of references in JavaScript */
-        const OFFSET = 21;
-        let r = rank - Ranks.ONE;
-        let c = file - Files.A;
-        this.board[OFFSET + r * this.#numColumns + c] = new Square(rank, file);
+    getSquare(rank, file){
+        return this.board[this.getIndex(rank, file)];
     }
 
     /**
@@ -153,11 +150,34 @@ class BackEnd{
         return this.possibleSquares;
     }
 
-    executeMove(){
-        this.toSquare.piece = this.fromSquare.piece;
-        this.fromSquare.piece = null;
+    get updatedSquares(){
+        return this.#updatedSquares;
+    }
 
+    executeMove(){
+        this.#updatedSquares = [];
+
+        if (this.fromSquare.piece.color === this.toSquare.piece.color){
+            let kingDestinationFile = this.toSquare.file > this.fromSquare.file ? Files.G : Files.C;
+            let rookDestinationFile = this.toSquare.file > this.fromSquare.file ? Files.F : Files.D;
+
+            let rookFromSquare = this.toSquare;
+            let rookToSquare = BACK_END.getSquare(this.fromSquare.rank, rookDestinationFile);
+            rookToSquare.piece = rookFromSquare.piece;
+            rookFromSquare.piece = Piece.NONE;
+            rookToSquare.piece.updateState();
+            this.updatedSquares.push(rookFromSquare);
+            this.updatedSquares.push(rookToSquare);
+
+            this.toSquare = BACK_END.getSquare(this.fromSquare.rank, kingDestinationFile);
+        }
+        
+        this.toSquare.piece = this.fromSquare.piece;
+        this.fromSquare.piece = Piece.NONE;
         this.toSquare.piece.updateState();
+        this.updatedSquares.push(this.fromSquare);
+        this.updatedSquares.push(this.toSquare);
+
         this.isValid = false;
 
         this.colorToMove = this.colorToMove === Piece.Color.WHITE ? Piece.Color.BLACK : Piece.Color.WHITE;
@@ -221,13 +241,8 @@ class FrontEnd{
         for (let rank = Ranks.ONE; rank <= Ranks.EIGHT; ++rank){
             for (let file = Files.A; file <= Files.H; ++file){
                 let square = BACK_END.getSquare(rank, file);
-                let piece = square.piece;
-                if (piece !== null){
-                    let pieceDiv = document.createElement("div");
-                    pieceDiv.classList.add("sprite", Piece.Color.getString(piece.color), Piece.Type.getString(piece.type));
-                    pieceDiv.role = "img"; /* Console warning for accessibility otherwise */
-                    pieceDiv.ariaLabel = `${Piece.Color.getString(piece.color)} ${Piece.Type.getString(piece.type)}`;
-                    this.getSquare(square.rank, square.file).appendChild(pieceDiv);
+                if (square.piece !== Piece.NONE){
+                    this.createPieceElement(square);
                 }
             }
         }
@@ -323,6 +338,27 @@ class FrontEnd{
         this.hasMadeMove = this.isDragging;
     }
 
+    createPieceElement(backEndSquare){
+        let pieceDiv = document.createElement("div");
+        pieceDiv.classList.add("sprite", Piece.Color.getString(backEndSquare.piece.color), Piece.Type.getString(backEndSquare.piece.type));
+        pieceDiv.role = "img"; /* Console warning for accessibility otherwise */
+        pieceDiv.ariaLabel = `${Piece.Color.getString(backEndSquare.piece.color)} ${Piece.Type.getString(backEndSquare.piece.type)}`;
+        this.getSquare(backEndSquare.rank, backEndSquare.file).appendChild(pieceDiv);
+    }
+
+    updateBoard(){
+        for (let backEndSquare of BACK_END.updatedSquares){
+            let frontEndSquare = this.getSquare(backEndSquare.rank, backEndSquare.file);
+            let targetPieces = frontEndSquare.getElementsByClassName("sprite");
+            if (targetPieces.length > 0){
+                frontEndSquare.removeChild(targetPieces[0]);
+            }
+            if (backEndSquare.piece !== Piece.NONE){
+                this.createPieceElement(backEndSquare);
+            }
+        }
+    }
+
     updateTurnContainer(){
         let oppositeColor = BACK_END.colorToMove === Piece.Color.WHITE ? Piece.Color.BLACK : Piece.Color.WHITE;
         this.turnContainer.classList.replace(Piece.Color.getString(oppositeColor), Piece.Color.getString(BACK_END.colorToMove));
@@ -364,13 +400,7 @@ class FrontEnd{
         BACK_END.setToSquare(targetRank, targetFile);
         if (BACK_END.isValid){
             BACK_END.executeMove();
-            let targetSquare = this.getSquare(targetRank, targetFile);
-            let targetPieces = targetSquare.getElementsByClassName("sprite");
-            if (targetPieces.length > 0){
-                targetSquare.removeChild(targetPieces[0]);
-            }
-            targetSquare.appendChild(this.selected.piece);
-            this.updateTurnContainer();
+            this.updateBoard();
         }
     }
 

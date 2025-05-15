@@ -1,6 +1,6 @@
-import Piece, {BACK_END} from "./piece.js";
+import {Piece, LeapingPiece} from "./piece-module.js";
 
-export class Knight extends Piece{
+export class Knight extends LeapingPiece{
     constructor(color){
         super(Piece.Type.KNIGHT, color);
     }
@@ -19,16 +19,7 @@ export class Knight extends Piece{
     }
 
     getPseudoLegalMoves(from){
-        let moves = [];
-
-        for (const DIRECTION of Knight.getCaptureDirections()){
-            let square = BACK_END.getTransposed(from, DIRECTION);
-            if (square !== null && (square.piece === null || square.piece.color !== this.color)){
-                moves.push(square);
-            }
-        }
-
-        return moves;
+        return super.getPseudoLegalMoves(from);
     }
 }
 

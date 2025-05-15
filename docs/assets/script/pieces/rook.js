@@ -1,6 +1,6 @@
-import Piece, {BACK_END} from "./piece.js";
+import {Piece, SlidingPiece} from "./piece-module.js";
 
-export class Rook extends Piece{
+export class Rook extends SlidingPiece{
     constructor(color){
         super(Piece.Type.ROOK, color);
     }
@@ -15,20 +15,7 @@ export class Rook extends Piece{
     }
 
     getPseudoLegalMoves(from){
-        let moves = [];
-
-        for (const DIRECTION of Rook.getCaptureDirections()){
-            let square = BACK_END.getTransposed(from, DIRECTION);
-            while (square !== null && square.piece === null){
-                moves.push(square);
-                square = BACK_END.getTransposed(square, DIRECTION);
-            }
-            if (square !== null && square.piece.color !== this.color){
-                moves.push(square);
-            }
-        }
-
-        return moves;
+        return super.getPseudoLegalMoves(from);
     }
 }
 

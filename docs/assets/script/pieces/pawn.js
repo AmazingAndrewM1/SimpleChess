@@ -1,4 +1,5 @@
-import Piece, {BACK_END} from "./piece.js";
+import {Piece} from "./piece-module.js";
+import {BACK_END, Square} from "../front-back.js";
 
 class Pawn extends Piece{
     constructor(color){
@@ -28,18 +29,18 @@ class Pawn extends Piece{
         let forwardDirection = {dx: 0, dy: captureDirections[0].dy};
         
         let forward1Square = BACK_END.getTransposed(from, forwardDirection);
-        if (forward1Square.piece === null){    // Out of bounds check not necessary
+        if (forward1Square.piece === Piece.NONE){    // Out of bounds check not necessary
             moves.push(forward1Square);
         }
 
         let forward2Square = BACK_END.getTransposed(forward1Square, forwardDirection);
-        if (this.hasMoved === false && forward1Square.piece === null && forward2Square.piece === null){   // Out of bounds check not necessary
+        if (this.hasMoved === false && forward1Square.piece === Piece.NONE && forward2Square.piece === Piece.NONE){   // Out of bounds check not necessary
             moves.push(forward2Square);
         }
 
         for (const DIRECTION of captureDirections){
             let captureSquare = BACK_END.getTransposed(from, DIRECTION);
-            if (captureSquare !== null && captureSquare.piece !== null && captureSquare.piece.color !== this.color){
+            if (captureSquare !== Square.NONE && captureSquare.piece !== Piece.NONE && captureSquare.piece.color !== this.color){
                 moves.push(captureSquare);
             }
         }

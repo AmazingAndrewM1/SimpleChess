@@ -1,7 +1,8 @@
-import Piece, {BACK_END} from "./piece.js";
+import {Piece, LeapingPiece} from "./piece-module.js";
+import {BACK_END, Square} from "../front-back.js";
 import {Files} from "../utils.js";
 
-class King extends Piece{
+class King extends LeapingPiece{
     constructor(color){
         super(Piece.Type.KING, color);
     }
@@ -20,22 +21,15 @@ class King extends Piece{
     }
 
     getPseudoLegalMoves(from){
-        let moves = [];
-
-        for (const DIRECTION of King.getCaptureDirections()){
-            let square = BACK_END.getTransposed(from, DIRECTION);
-            if (square !== null && (square.piece === null || square.piece.color !== this.color)){
-                moves.push(square);
-            }
-        }
+        let moves = super.getPseudoLegalMoves(from);
 
         let kingsideRookSquare = this.getKingsideRookSquare(from);
-        if (kingsideRookSquare !== null){
+        if (kingsideRookSquare !== Square.NONE){
             moves.push(kingsideRookSquare);
         }
 
         let queensideRookSquare = this.getQueensideRookSquare(from);
-        if (queensideRookSquare !== null){
+        if (queensideRookSquare !== Square.NONE){
             moves.push(queensideRookSquare);
         }
 
@@ -53,16 +47,16 @@ class King extends Piece{
     findRookSquare(kingSquare, kingDestinationFile, rookDestinationFile){
         const ROOK_DIRECTION = {dx: Math.sign(kingDestinationFile - rookDestinationFile), dy: 0};
         let rookSquare = BACK_END.getTransposed(kingSquare, ROOK_DIRECTION);
-        while (rookSquare !== null && rookSquare.piece === null){
+        while (rookSquare !== Square.NONE && rookSquare.piece === Piece.NONE){
             rookSquare = BACK_END.getTransposed(rookSquare, ROOK_DIRECTION);
         }
-        if (rookSquare === null){
-            return null;
+        if (rookSquare === Square.NONE){
+            return Square.NONE;
         }
         let maybeRook = rookSquare.piece;
         return maybeRook.hasMoved === false && maybeRook.color === this.color && maybeRook.type === Piece.Type.ROOK ? 
                 rookSquare:
-                null;
+                Square.NONE;
     }
 
     isKingPathClear(kingSquare, rookSquare, kingDestinationFile){
@@ -75,7 +69,7 @@ class King extends Piece{
         const SCAN_DIRECTION = {dx: Math.sign(kingDestinationFile - kingSquare.file), dy: 0};
         let startSquare = Math.abs(kingDestinationFile - kingSquare.file) < Math.abs(kingDestinationFile - rookSquare.file) ? kingSquare : rookSquare;
         let square = BACK_END.getTransposed(startSquare, SCAN_DIRECTION);
-        while (square.file !== kingDestinationFile && square.piece === null){
+        while (square.file !== kingDestinationFile && square.piece === Piece.NONE){
             square = BACK_END.getTransposed(square, SCAN_DIRECTION);
         }
         return square.file === kingDestinationFile;
@@ -83,22 +77,22 @@ class King extends Piece{
 
     getRookSquare(kingSquare, kingDestinationFile, rookDestinationFile){
         if (this.hasMoved){
-            return null;
+            return Square.NONE;
         }
 
         let rookSquare = this.findRookSquare(kingSquare, kingDestinationFile, rookDestinationFile);
-        if (rookSquare === null){
-            return null;
+        if (rookSquare === Square.NONE){
+            return Square.NONE;
         }
 
         if (!this.isKingPathClear(kingSquare, rookSquare, kingDestinationFile)){
-            return null;
+            return Square.NONE;
         }
 
         let rookDestinationPiece = BACK_END.getSquare(kingSquare.rank, rookDestinationFile).piece;
-        return rookDestinationPiece === null || rookDestinationPiece === this || rookDestinationPiece === rookSquare.piece ?
+        return rookDestinationPiece === Piece.NONE || rookDestinationPiece === this || rookDestinationPiece === rookSquare.piece ?
                 rookSquare : 
-                null;
+                Square.NONE;
     }
 }
 

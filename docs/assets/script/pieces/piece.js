@@ -8,6 +8,7 @@ class Piece{
         BISHOP: 3,
         KNIGHT: 4,
         PAWN: 5,
+        NONE: 6,
         getString: function(type){
             switch (type){
                 case Piece.Type.KING:
@@ -30,6 +31,7 @@ class Piece{
     static Color = Object.freeze({
         WHITE: 0,
         BLACK: 1,
+        NONE: 2,
         getString: function(color){
             switch (color){
                 case Piece.Color.WHITE:
@@ -73,6 +75,8 @@ class Piece{
 
         return String.fromCharCode(charCode);
     }
+
+    static NONE = new Piece(Piece.Type.NONE, Piece.Color.NONE);
 
     constructor(type, color){
         this._hasMoved = false;
