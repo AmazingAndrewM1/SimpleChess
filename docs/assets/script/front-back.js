@@ -87,6 +87,7 @@ class BackEnd{
         this.colorToMove = Piece.Color.WHITE;
         this.fromSquare = Square.NONE;
         this.toSquare = Square.NONE;
+        this.enPassantSquare = Square.NONE;
         this.isValid = false;
     }
 
@@ -171,12 +172,28 @@ class BackEnd{
 
             this.toSquare = BACK_END.getSquare(this.fromSquare.rank, kingDestinationFile);
         }
+        else if (this.fromSquare.piece.type === Piece.Type.PAWN && this.toSquare === this.enPassantSquare){
+            let capturedPawnSquare = BACK_END.getSquare(this.fromSquare.rank, this.toSquare.file);
+            capturedPawnSquare.piece = Piece.NONE;
+            this.updatedSquares.push(capturedPawnSquare);
+        }
         
         this.toSquare.piece = this.fromSquare.piece;
         this.fromSquare.piece = Piece.NONE;
         this.toSquare.piece.updateState();
         this.updatedSquares.push(this.fromSquare);
         this.updatedSquares.push(this.toSquare);
+
+        this.enPassantSquare = Square.NONE;
+        if (this.toSquare.piece.type === Piece.Type.PAWN){
+            let forwardDirection = {dx: 0, dy: Pawn.getCaptureDirections(this.toSquare.piece.color)[0].dy};
+            if (this.getTransposed(this.toSquare, forwardDirection) === Square.NONE){
+                this.toSquare.piece = new Queen(this.toSquare.piece.color);
+            }
+            else if (this.toSquare.file === this.fromSquare.file && this.toSquare !== this.getTransposed(this.fromSquare, forwardDirection)){
+                this.enPassantSquare = this.getTransposed(this.fromSquare, forwardDirection);
+            }
+        }
 
         this.isValid = false;
 

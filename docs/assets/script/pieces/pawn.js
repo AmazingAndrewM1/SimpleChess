@@ -7,20 +7,22 @@ class Pawn extends Piece{
     }
 
     static getCaptureDirections(color){
+        let forwardDirection;
         switch (color){
             case Piece.Color.WHITE:
-                return [
-                    {dx: 1, dy: 1},
-                    {dx: -1, dy: 1}
-                ];
+                forwardDirection = 1;
+                break;
             case Piece.Color.BLACK:
-                return [
-                    {dx: 1, dy: -1},
-                    {dx: -1, dy: -1}
-                ];
+                forwardDirection = -1;
+                break;
             default:
                 throw new Error("Piece color not in list.");
         }
+
+        return [
+            {dx: 1, dy: forwardDirection},
+            {dx: -1, dy: forwardDirection}
+        ];
     }   
 
     getPseudoLegalMoves(from){
@@ -41,6 +43,9 @@ class Pawn extends Piece{
         for (const DIRECTION of captureDirections){
             let captureSquare = BACK_END.getTransposed(from, DIRECTION);
             if (captureSquare !== Square.NONE && captureSquare.piece !== Piece.NONE && captureSquare.piece.color !== this.color){
+                moves.push(captureSquare);
+            }
+            else if (captureSquare !== Square.NONE && captureSquare === BACK_END.enPassantSquare){
                 moves.push(captureSquare);
             }
         }
