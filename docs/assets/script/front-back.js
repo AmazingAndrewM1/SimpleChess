@@ -374,6 +374,7 @@ class FrontEnd{
                 this.createPieceElement(backEndSquare);
             }
         }
+        this.updateTurnContainer();
     }
 
     updateTurnContainer(){
