@@ -60,28 +60,55 @@ class BackEnd{
             }
         }
 
-        this.getSquare(Ranks.ONE, Files.A).piece = new Rook(Piece.Color.WHITE);
-        this.getSquare(Ranks.ONE, Files.B).piece = new Knight(Piece.Color.WHITE);
-        this.getSquare(Ranks.ONE, Files.C).piece = new Bishop(Piece.Color.WHITE);
-        this.getSquare(Ranks.ONE, Files.D).piece = new Queen(Piece.Color.WHITE);
-        this.getSquare(Ranks.ONE, Files.E).piece = new King(Piece.Color.WHITE);
-        this.getSquare(Ranks.ONE, Files.F).piece = new Bishop(Piece.Color.WHITE);
-        this.getSquare(Ranks.ONE, Files.G).piece = new Knight(Piece.Color.WHITE);
-        this.getSquare(Ranks.ONE, Files.H).piece = new Rook(Piece.Color.WHITE);
+        let fileOptions = Object.values(Files).filter(
+            (file, _) => file !== Files.NONE
+        );
 
-        for (let file = Files.A; file <= Files.H; ++file){
-            this.getSquare(Ranks.TWO, file).piece = new Pawn(Piece.Color.WHITE);
-            this.getSquare(Ranks.SEVEN, file).piece = new Pawn(Piece.Color.BLACK);
+        let bishopFile1 = fileOptions[2 * Math.floor(fileOptions.length / 2 * Math.random())];
+        let bishopFile2 = fileOptions[2 * Math.floor(fileOptions.length / 2 * Math.random()) + 1];
+        this.getSquare(Ranks.ONE, bishopFile1).piece = new Bishop(Piece.Color.WHITE);
+        this.getSquare(Ranks.ONE, bishopFile2).piece = new Bishop(Piece.Color.WHITE);
+
+        fileOptions = fileOptions.filter(
+            (file, _) => file !== bishopFile1 &&
+                        file !== bishopFile2
+        );
+
+        // Shuffle with Fisher-Yates algorithm
+        for (let i = 0; i < fileOptions.length - 1; ++i){
+            let swapIndex = Math.floor(Math.random() * (fileOptions.length - i)) + i;
+            let temp = fileOptions[i];
+            fileOptions[i] = fileOptions[swapIndex];
+            fileOptions[swapIndex] = temp;
         }
 
-        this.getSquare(Ranks.EIGHT, Files.A).piece = new Rook(Piece.Color.BLACK);
-        this.getSquare(Ranks.EIGHT, Files.B).piece = new Knight(Piece.Color.BLACK);
-        this.getSquare(Ranks.EIGHT, Files.C).piece = new Bishop(Piece.Color.BLACK);
-        this.getSquare(Ranks.EIGHT, Files.D).piece = new Queen(Piece.Color.BLACK);
-        this.getSquare(Ranks.EIGHT, Files.E).piece = new King(Piece.Color.BLACK);
-        this.getSquare(Ranks.EIGHT, Files.F).piece = new Bishop(Piece.Color.BLACK);
-        this.getSquare(Ranks.EIGHT, Files.G).piece = new Knight(Piece.Color.BLACK);
-        this.getSquare(Ranks.EIGHT, Files.H).piece = new Rook(Piece.Color.BLACK);
+        this.getSquare(Ranks.ONE, fileOptions[0]).piece = new Queen(Piece.Color.WHITE);
+        this.getSquare(Ranks.ONE, fileOptions[1]).piece = new Knight(Piece.Color.WHITE);
+        this.getSquare(Ranks.ONE, fileOptions[2]).piece = new Knight(Piece.Color.WHITE);
+
+        // Guess king and rook placement and modify, if necessary.
+        let kingFile = fileOptions[3];
+        let rookFile1 = fileOptions[4];
+        let rookFile2 = fileOptions[5];
+        if (kingFile < rookFile1 === rookFile1 < rookFile2){
+            let temp = kingFile;
+            kingFile = rookFile1;
+            rookFile1 = temp;
+        }
+        else if (kingFile < rookFile2 === rookFile2 < rookFile1){
+            let temp = kingFile;
+            kingFile = rookFile2;
+            rookFile2 = temp;
+        }
+
+        this.getSquare(Ranks.ONE, kingFile).piece = new King(Piece.Color.WHITE);
+        this.getSquare(Ranks.ONE, rookFile1).piece = new Rook(Piece.Color.WHITE);
+        this.getSquare(Ranks.ONE, rookFile2).piece = new Rook(Piece.Color.WHITE);
+
+        for (let file = Files.A; file <= Files.H; ++file){
+            let rank1Piece = this.getSquare(Ranks.ONE, file).piece;
+            this.getSquare(Ranks.EIGHT, file).piece = new rank1Piece.constructor(Piece.Color.BLACK);
+        }
 
         this.possibleSquares = [];
         this.colorToMove = Piece.Color.WHITE;
@@ -127,7 +154,7 @@ class BackEnd{
      * @param {Object} direction - the direction to perform the transformation
      * @param {number} direction.dx - direction in change of file
      * @param {number} direction.dy - direction in change of rank
-     * @returns {Square | null} the square after the transformation and null if the corresponding square would not exist on the standard 8x8 chessboard.
+     * @returns {Square} the square after the transformation and null if the corresponding square would not exist on the standard 8x8 chessboard.
      */
     getTransposed(square, direction){
         return this.getSquare(square.rank + direction.dy, square.file + direction.dx);
