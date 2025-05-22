@@ -108,6 +108,9 @@ class BackEnd{
         for (let file = Files.A; file <= Files.H; ++file){
             let rank1Piece = this.getSquare(Ranks.ONE, file).piece;
             this.getSquare(Ranks.EIGHT, file).piece = new rank1Piece.constructor(Piece.Color.BLACK);
+
+            this.getSquare(Ranks.TWO, file).piece = new Pawn(Piece.Color.WHITE);
+            this.getSquare(Ranks.SEVEN, file).piece = new Pawn(Piece.Color.BLACK);
         }
 
         this.possibleSquares = [];
