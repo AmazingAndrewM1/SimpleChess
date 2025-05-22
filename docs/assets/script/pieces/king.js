@@ -68,11 +68,13 @@ class King extends LeapingPiece{
 
         const SCAN_DIRECTION = {dx: Math.sign(kingDestinationFile - kingSquare.file), dy: 0};
         let startSquare = Math.abs(kingDestinationFile - kingSquare.file) < Math.abs(kingDestinationFile - rookSquare.file) ? kingSquare : rookSquare;
+        let prevFile = startSquare.file;
         let square = BACK_END.getTransposed(startSquare, SCAN_DIRECTION);
-        while (square.file !== kingDestinationFile && square.piece === Piece.NONE){
+        while (prevFile !== kingDestinationFile && square.piece === Piece.NONE){
+            prevFile = square.file;
             square = BACK_END.getTransposed(square, SCAN_DIRECTION);
         }
-        return square.file === kingDestinationFile;
+        return prevFile === kingDestinationFile;
     }
 
     getRookSquare(kingSquare, kingDestinationFile, rookDestinationFile){

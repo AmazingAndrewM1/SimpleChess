@@ -182,35 +182,7 @@ class BackEnd{
         return this.#updatedSquares;
     }
 
-    executeMove(){
-        this.#updatedSquares = [];
-
-        if (this.fromSquare.piece.color === this.toSquare.piece.color){
-            let kingDestinationFile = this.toSquare.file > this.fromSquare.file ? Files.G : Files.C;
-            let rookDestinationFile = this.toSquare.file > this.fromSquare.file ? Files.F : Files.D;
-
-            let rookFromSquare = this.toSquare;
-            let rookToSquare = BACK_END.getSquare(this.fromSquare.rank, rookDestinationFile);
-            rookToSquare.piece = rookFromSquare.piece;
-            rookFromSquare.piece = Piece.NONE;
-            rookToSquare.piece.updateState();
-            this.updatedSquares.push(rookFromSquare);
-            this.updatedSquares.push(rookToSquare);
-
-            this.toSquare = BACK_END.getSquare(this.fromSquare.rank, kingDestinationFile);
-        }
-        else if (this.fromSquare.piece.type === Piece.Type.PAWN && this.toSquare === this.enPassantSquare){
-            let capturedPawnSquare = BACK_END.getSquare(this.fromSquare.rank, this.toSquare.file);
-            capturedPawnSquare.piece = Piece.NONE;
-            this.updatedSquares.push(capturedPawnSquare);
-        }
-        
-        this.toSquare.piece = this.fromSquare.piece;
-        this.fromSquare.piece = Piece.NONE;
-        this.toSquare.piece.updateState();
-        this.updatedSquares.push(this.fromSquare);
-        this.updatedSquares.push(this.toSquare);
-
+    updateBoard(){
         this.enPassantSquare = Square.NONE;
         if (this.toSquare.piece.type === Piece.Type.PAWN){
             let forwardDirection = {dx: 0, dy: Pawn.getCaptureDirections(this.toSquare.piece.color)[0].dy};
@@ -222,9 +194,54 @@ class BackEnd{
             }
         }
 
-        this.isValid = false;
-
         this.colorToMove = this.colorToMove === Piece.Color.WHITE ? Piece.Color.BLACK : Piece.Color.WHITE;
+        this.fromSquare = Square.NONE;
+        this.toSquare = Square.NONE;
+        this.isValid = false;
+    }
+
+    executeMove(){
+        this.#updatedSquares = [];
+
+        if (this.fromSquare.piece.color === this.toSquare.piece.color){
+            let castlingKing = this.fromSquare.piece;
+            let castlingRook = this.toSquare.piece;
+
+            let kingDestinationFile = this.toSquare.file > this.fromSquare.file ? Files.G : Files.C;
+            let rookDestinationFile = this.toSquare.file > this.fromSquare.file ? Files.F : Files.D;
+
+            this.fromSquare.piece = Piece.NONE;
+            this.toSquare.piece = Piece.NONE;
+            let kingDestinationSquare = this.getSquare(this.fromSquare.rank, kingDestinationFile);
+            kingDestinationSquare.piece = castlingKing;
+            let rookDestinationSquare = this.getSquare(this.fromSquare.rank, rookDestinationFile);
+            rookDestinationSquare.piece = castlingRook;
+
+            this.updatedSquares.push(this.fromSquare);
+            this.updatedSquares.push(kingDestinationSquare);
+            this.updatedSquares.push(this.toSquare);
+            this.updatedSquares.push(rookDestinationSquare);
+
+            castlingKing.updateState();
+            castlingRook.updateState();
+
+            this.updateBoard();
+            return;
+        }
+        
+        if (this.fromSquare.piece.type === Piece.Type.PAWN && this.toSquare === this.enPassantSquare){
+            let capturedPawnSquare = BACK_END.getSquare(this.fromSquare.rank, this.toSquare.file);
+            capturedPawnSquare.piece = Piece.NONE;
+            this.updatedSquares.push(capturedPawnSquare);
+        }
+        
+        this.toSquare.piece = this.fromSquare.piece;
+        this.fromSquare.piece = Piece.NONE;
+        this.toSquare.piece.updateState();
+        this.updatedSquares.push(this.fromSquare);
+        this.updatedSquares.push(this.toSquare);
+
+        this.updateBoard();
     }
 }
 
