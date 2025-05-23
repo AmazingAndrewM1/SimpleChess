@@ -5,6 +5,10 @@ export class Knight extends LeapingPiece{
         super(Piece.Type.KNIGHT, color);
     }
 
+    static getCaptureDirections(color){
+        return Knight.getCaptureDirections();
+    }
+
     static getCaptureDirections(){
         return [
             {dx: 1, dy: 2},

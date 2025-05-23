@@ -71,7 +71,7 @@ class BackEnd{
 
         fileOptions = fileOptions.filter(
             (file, _) => file !== bishopFile1 &&
-                        file !== bishopFile2
+                         file !== bishopFile2
         );
 
         // Shuffle with Fisher-Yates algorithm
@@ -101,7 +101,9 @@ class BackEnd{
             rookFile2 = temp;
         }
 
-        this.getSquare(Ranks.ONE, kingFile).piece = new King(Piece.Color.WHITE);
+        this.whiteKingSquare = this.getSquare(Ranks.ONE, kingFile);
+        this.whiteKingSquare.piece = new King(Piece.Color.WHITE);
+        this.blackKingSquare = this.getSquare(Ranks.EIGHT, kingFile);
         this.getSquare(Ranks.ONE, rookFile1).piece = new Rook(Piece.Color.WHITE);
         this.getSquare(Ranks.ONE, rookFile2).piece = new Rook(Piece.Color.WHITE);
 
@@ -113,6 +115,7 @@ class BackEnd{
             this.getSquare(Ranks.SEVEN, file).piece = new Pawn(Piece.Color.BLACK);
         }
 
+        this.colorKingSquare = this.whiteKingSquare;
         this.possibleSquares = [];
         this.colorToMove = Piece.Color.WHITE;
         this.fromSquare = Square.NONE;
@@ -185,6 +188,35 @@ class BackEnd{
         return this.#updatedSquares;
     }
 
+    /*
+        Note kings cannot check each other, so this function ignores that possibility.
+    */
+    isInCheck(){
+        for (const PIECE_TYPE of [Pawn, Knight]){
+            for (const DIRECTION of PIECE_TYPE.getCaptureDirections(this.colorToMove)){
+                let maybeEnemyPiece = this.getTransposed(this.colorKingSquare, DIRECTION).piece;
+                if (maybeEnemyPiece.constructor === PIECE_TYPE && maybeEnemyPiece.color !== this.colorToMove){
+                    return true;
+                }
+            }
+        }
+
+        for (const PIECE_TYPE of [Bishop, Rook]){
+            for (const DIRECTION of PIECE_TYPE.getCaptureDirections()){
+                let square = this.getTransposed(this.colorKingSquare, DIRECTION);
+                while (square !== Square.NONE && square.piece === Piece.NONE){
+                    square = this.getTransposed(square, DIRECTION);
+                }
+                let maybeEnemyPiece = square.piece;
+                if ((maybeEnemyPiece.constructor === PIECE_TYPE || maybeEnemyPiece.type === Piece.Type.QUEEN) && maybeEnemyPiece.color !== this.colorToMove){
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     updateBoard(){
         this.enPassantSquare = Square.NONE;
         if (this.toSquare.piece.type === Piece.Type.PAWN){
@@ -197,10 +229,24 @@ class BackEnd{
             }
         }
 
-        this.colorToMove = this.colorToMove === Piece.Color.WHITE ? Piece.Color.BLACK : Piece.Color.WHITE;
+        if (this.colorToMove === Piece.Color.WHITE){
+            this.whiteKingSquare = this.colorKingSquare;
+            this.colorToMove = Piece.Color.BLACK;
+            this.colorKingSquare = this.blackKingSquare;
+        }
+        else{
+            this.blackKingSquare = this.colorKingSquare;
+            this.colorToMove = Piece.Color.WHITE;
+            this.colorKingSquare = this.whiteKingSquare;
+        }
+
         this.fromSquare = Square.NONE;
         this.toSquare = Square.NONE;
         this.isValid = false;
+
+        if (this.isInCheck()){
+            console.log("Check!");
+        }
     }
 
     executeMove(){
@@ -228,6 +274,8 @@ class BackEnd{
             castlingKing.updateState();
             castlingRook.updateState();
 
+            this.colorKingSquare = kingDestinationSquare;
+
             this.updateBoard();
             return;
         }
@@ -243,6 +291,10 @@ class BackEnd{
         this.toSquare.piece.updateState();
         this.updatedSquares.push(this.fromSquare);
         this.updatedSquares.push(this.toSquare);
+
+        if (this.colorKingSquare.piece.type !== Piece.Type.KING){
+            this.colorKingSquare = this.toSquare;
+        }
 
         this.updateBoard();
     }
