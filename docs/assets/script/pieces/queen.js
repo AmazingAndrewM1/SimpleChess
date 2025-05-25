@@ -1,6 +1,6 @@
-import {Piece, SlidingPiece, King} from "./piece-module.js";
+import {Piece, King} from "./piece-module.js";
 
-class Queen extends SlidingPiece{
+class Queen extends Piece{
     constructor(color){
         super(Piece.Type.QUEEN, color);
     }
@@ -10,7 +10,7 @@ class Queen extends SlidingPiece{
     }
 
     getPseudoLegalMoves(from){
-        return super.getPseudoLegalMoves(from);
+        return Piece.getSlidingMoves(Queen.getCaptureDirections(), from);
     }
 }
 

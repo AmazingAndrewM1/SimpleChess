@@ -1,6 +1,6 @@
-import {Piece, SlidingPiece} from "./piece-module.js";
+import {Piece} from "./piece-module.js";
 
-class Bishop extends SlidingPiece{
+class Bishop extends Piece{
     constructor(color){
         super(Piece.Type.BISHOP, color);
     }
@@ -15,7 +15,7 @@ class Bishop extends SlidingPiece{
     }
 
     getPseudoLegalMoves(from){
-        return super.getPseudoLegalMoves(from);
+        return Piece.getSlidingMoves(Bishop.getCaptureDirections(), from);
     }
 }
 

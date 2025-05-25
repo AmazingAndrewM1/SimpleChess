@@ -1,8 +1,8 @@
-import {Piece, LeapingPiece} from "./piece-module.js";
+import {Piece} from "./piece-module.js";
 import {BACK_END, Square} from "../front-back.js";
 import {Files} from "../utils.js";
 
-class King extends LeapingPiece{
+class King extends Piece{
     constructor(color){
         super(Piece.Type.KING, color);
     }
@@ -21,7 +21,7 @@ class King extends LeapingPiece{
     }
 
     getPseudoLegalMoves(from){
-        let moves = super.getPseudoLegalMoves(from);
+        let moves = Piece.getLeapingMoves(King.getCaptureDirections(), from);
 
         let kingsideRookSquare = this.getKingsideRookSquare(from);
         if (kingsideRookSquare !== Square.NONE){

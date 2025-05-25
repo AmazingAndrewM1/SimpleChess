@@ -76,6 +76,36 @@ class Piece{
         return String.fromCharCode(charCode);
     }
 
+    static getSlidingMoves(captureDirections, from){
+        let moves = [];
+
+        for (const DIRECTION of captureDirections){
+            let square = BACK_END.getTransposed(from, DIRECTION);
+            while (square !== Square.NONE && square.piece === Piece.NONE){
+                moves.push(square);
+                square = BACK_END.getTransposed(square, DIRECTION);
+            }
+            if (square !== Square.NONE && square.piece.color !== from.piece.color){
+                moves.push(square);
+            }
+        }
+
+        return moves;
+    }
+
+    static getLeapingMoves(captureDirections, from){
+        let moves = [];
+
+        for (const DIRECTION of captureDirections){
+            let square = BACK_END.getTransposed(from, DIRECTION);
+            if (square !== Square.NONE && square.piece.color !== from.piece.color){
+                moves.push(square);
+            }
+        }
+
+        return moves;
+    }
+
     static NONE = new Piece(Piece.Type.NONE, Piece.Color.NONE);
 
     constructor(type, color){

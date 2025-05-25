@@ -1,6 +1,6 @@
-import {Piece, SlidingPiece} from "./piece-module.js";
+import {Piece} from "./piece-module.js";
 
-export class Rook extends SlidingPiece{
+class Rook extends Piece{
     constructor(color){
         super(Piece.Type.ROOK, color);
     }
@@ -15,7 +15,7 @@ export class Rook extends SlidingPiece{
     }
 
     getPseudoLegalMoves(from){
-        return super.getPseudoLegalMoves(from);
+        return Piece.getSlidingMoves(Rook.getCaptureDirections(), from);
     }
 }
 

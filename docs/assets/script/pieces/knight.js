@@ -1,6 +1,6 @@
-import {Piece, LeapingPiece} from "./piece-module.js";
+import {Piece} from "./piece-module.js";
 
-class Knight extends LeapingPiece{
+class Knight extends Piece{
     constructor(color){
         super(Piece.Type.KNIGHT, color);
     }
@@ -23,7 +23,7 @@ class Knight extends LeapingPiece{
     }
 
     getPseudoLegalMoves(from){
-        return super.getPseudoLegalMoves(from);
+        return Piece.getLeapingMoves(Knight.getCaptureDirections(), from);
     }
 }
 
