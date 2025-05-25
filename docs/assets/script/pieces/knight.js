@@ -1,6 +1,6 @@
 import {Piece, LeapingPiece} from "./piece-module.js";
 
-export class Knight extends LeapingPiece{
+class Knight extends LeapingPiece{
     constructor(color){
         super(Piece.Type.KNIGHT, color);
     }
