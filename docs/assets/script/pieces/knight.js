@@ -2,7 +2,7 @@ import {Piece} from "./piece-module.js";
 
 class Knight extends Piece{
     constructor(color){
-        super(Piece.Type.KNIGHT, color);
+        super(color);
     }
 
     static getCaptureDirections(color){

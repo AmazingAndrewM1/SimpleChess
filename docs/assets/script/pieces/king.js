@@ -1,10 +1,10 @@
-import {Piece} from "./piece-module.js";
+import {Piece, Rook} from "./piece-module.js";
 import {BACK_END, Square} from "../front-back.js";
 import {Files} from "../utils.js";
 
 class King extends Piece{
     constructor(color){
-        super(Piece.Type.KING, color);
+        super(color);
     }
 
     static getCaptureDirections(){
@@ -23,25 +23,17 @@ class King extends Piece{
     getPseudoLegalMoves(from){
         let moves = Piece.getLeapingMoves(King.getCaptureDirections(), from);
 
-        let kingsideRookSquare = this.getKingsideRookSquare(from);
+        let kingsideRookSquare = this.getRookSquare(from, Files.G, Files.F);
         if (kingsideRookSquare !== Square.NONE){
             moves.push(kingsideRookSquare);
         }
 
-        let queensideRookSquare = this.getQueensideRookSquare(from);
+        let queensideRookSquare = this.getRookSquare(from, Files.C, Files.D);
         if (queensideRookSquare !== Square.NONE){
             moves.push(queensideRookSquare);
         }
 
         return moves;
-    }
-
-    getKingsideRookSquare(kingSquare){
-        return this.getRookSquare(kingSquare, Files.G, Files.F);
-    }
-
-    getQueensideRookSquare(kingSquare){
-        return this.getRookSquare(kingSquare, Files.C, Files.D);
     }
 
     findRookSquare(kingSquare, kingDestinationFile, rookDestinationFile){
@@ -54,7 +46,7 @@ class King extends Piece{
             return Square.NONE;
         }
         let maybeRook = rookSquare.piece;
-        return maybeRook.hasMoved === false && maybeRook.color === this.color && maybeRook.type === Piece.Type.ROOK ? 
+        return maybeRook.hasMoved === false && maybeRook.color === this.color && maybeRook.constructor === Rook ? 
                 rookSquare:
                 Square.NONE;
     }

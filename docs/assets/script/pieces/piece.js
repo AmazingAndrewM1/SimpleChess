@@ -1,33 +1,7 @@
 import {FRONT_END, BACK_END, Square} from "../front-back.js";
+import {King, Queen, Rook, Bishop, Knight, Pawn} from "./piece-module.js";
 
 class Piece{
-    static Type = Object.freeze({
-        KING: 0,
-        QUEEN: 1,
-        ROOK: 2,
-        BISHOP: 3,
-        KNIGHT: 4,
-        PAWN: 5,
-        NONE: 6,
-        getString: function(type){
-            switch (type){
-                case Piece.Type.KING:
-                    return "king";
-                case Piece.Type.QUEEN:
-                    return "queen";
-                case Piece.Type.ROOK:
-                    return "rook";
-                case Piece.Type.BISHOP:
-                    return "bishop";
-                case Piece.Type.KNIGHT:
-                    return "knight";
-                case Piece.Type.PAWN:
-                    return "pawn";
-                default:
-                    throw new Error("Type not in list");
-            }
-        }
-    });
     static Color = Object.freeze({
         WHITE: 0,
         BLACK: 1,
@@ -44,36 +18,58 @@ class Piece{
         }
     });
 
+    static getTypeString(piece){
+        switch (piece.constructor){
+            case King:
+                return "king";
+            case Queen:
+                return "queen";
+            case Rook:
+                return "rook";
+            case Bishop:
+                return "bishop";
+            case Knight:
+                return "knight";
+            case Pawn:
+                return "pawn";
+            default:
+                throw new Error("Piece type not recognized: " + piece.constructor);
+        }
+    }
+
     static getChar(piece){
-        let charCode = 0;
-        switch (piece.type){
-            case Piece.Type.KING:
-                charCode = "k".charCodeAt(0);
+        let char;
+        switch (piece.constructor){
+            case King:
+                char = "k";
                 break;
-            case Piece.Type.QUEEN:
-                charCode = "q".charCodeAt(0);
+            case Queen:
+                char = "q";
                 break;
-            case Piece.Type.ROOK:
-                charCode = "r".charCodeAt(0);
+            case Rook:
+                char = "r";
                 break;
-            case Piece.Type.BISHOP:
-                charCode = "b".charCodeAt(0);
+            case Bishop:
+                char = "b";
                 break;
-            case Piece.Type.KNIGHT:
-                charCode = "n".charCodeAt(0);
+            case Knight:
+                char = "n";
                 break;
-            case Piece.Type.PAWN:
-                charCode = "p".charCodeAt(0);
+            case Pawn:
+                char = "p";
                 break;
             default:
-                throw new Error("Piece type not in list");
+                throw new Error("Piece type not recognized: " + piece.constructor);
         }
 
-        if (piece.color === Piece.Color.WHITE){
-            charCode -= 32;
+        switch (piece.color){
+            case Piece.Color.WHITE:
+                return char;
+            case Piece.Color.BLACK:
+                return char.toUpperCase();
+            default:
+                throw new Error("Piece color not recognized: " + piece.color);s
         }
-
-        return String.fromCharCode(charCode);
     }
 
     static getSlidingMoves(captureDirections, from){
@@ -106,20 +102,15 @@ class Piece{
         return moves;
     }
 
-    static NONE = new Piece(Piece.Type.NONE, Piece.Color.NONE);
+    static NONE = new Piece(Piece.Color.NONE);
 
-    constructor(type, color){
+    constructor(color){
         this._hasMoved = false;
         this._color = color;
-        this._type = type;
     }
 
     get hasMoved(){
         return this._hasMoved;
-    }
-
-    get type(){
-        return this._type;
     }
 
     get color(){

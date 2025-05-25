@@ -208,7 +208,7 @@ class BackEnd{
                     square = this.getTransposed(square, DIRECTION);
                 }
                 let maybeEnemyPiece = square.piece;
-                if ((maybeEnemyPiece.constructor === PIECE_TYPE || maybeEnemyPiece.type === Piece.Type.QUEEN) && maybeEnemyPiece.color !== this.colorToMove){
+                if ((maybeEnemyPiece.constructor === PIECE_TYPE || maybeEnemyPiece.constructor === Queen) && maybeEnemyPiece.color !== this.colorToMove){
                     return true;
                 }
             }
@@ -219,7 +219,7 @@ class BackEnd{
 
     updateBoard(){
         this.enPassantSquare = Square.NONE;
-        if (this.toSquare.piece.type === Piece.Type.PAWN){
+        if (this.toSquare.piece.constructor === Pawn){
             let forwardDirection = {dx: 0, dy: Pawn.getCaptureDirections(this.toSquare.piece.color)[0].dy};
             if (this.getTransposed(this.toSquare, forwardDirection) === Square.NONE){
                 this.toSquare.piece = new Queen(this.toSquare.piece.color);
@@ -280,7 +280,7 @@ class BackEnd{
             return;
         }
         
-        if (this.fromSquare.piece.type === Piece.Type.PAWN && this.toSquare === this.enPassantSquare){
+        if (this.fromSquare.piece.constructor === Pawn && this.toSquare === this.enPassantSquare){
             let capturedPawnSquare = BACK_END.getSquare(this.fromSquare.rank, this.toSquare.file);
             capturedPawnSquare.piece = Piece.NONE;
             this.updatedSquares.push(capturedPawnSquare);
@@ -292,7 +292,7 @@ class BackEnd{
         this.updatedSquares.push(this.fromSquare);
         this.updatedSquares.push(this.toSquare);
 
-        if (this.colorKingSquare.piece.type !== Piece.Type.KING){
+        if (this.colorKingSquare.piece.constructor !== King){
             this.colorKingSquare = this.toSquare;
         }
 
@@ -456,9 +456,9 @@ class FrontEnd{
 
     createPieceElement(backEndSquare){
         let pieceDiv = document.createElement("div");
-        pieceDiv.classList.add("sprite", Piece.Color.getString(backEndSquare.piece.color), Piece.Type.getString(backEndSquare.piece.type));
+        pieceDiv.classList.add("sprite", Piece.Color.getString(backEndSquare.piece.color), Piece.getTypeString(backEndSquare.piece));
         pieceDiv.role = "img"; /* Console warning for accessibility otherwise */
-        pieceDiv.ariaLabel = `${Piece.Color.getString(backEndSquare.piece.color)} ${Piece.Type.getString(backEndSquare.piece.type)}`;
+        pieceDiv.ariaLabel = `${Piece.Color.getString(backEndSquare.piece.color)} ${Piece.getTypeString(backEndSquare.piece)}`;
         this.getSquare(backEndSquare.rank, backEndSquare.file).appendChild(pieceDiv);
     }
 

@@ -2,7 +2,7 @@ import {Piece} from "./piece-module.js";
 
 class Bishop extends Piece{
     constructor(color){
-        super(Piece.Type.BISHOP, color);
+        super(color);
     }
 
     static getCaptureDirections(){

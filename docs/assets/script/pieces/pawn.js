@@ -3,7 +3,7 @@ import {BACK_END, Square} from "../front-back.js";
 
 class Pawn extends Piece{
     constructor(color){
-        super(Piece.Type.PAWN, color);
+        super(color);
     }
 
     static getCaptureDirections(color){
