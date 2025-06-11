@@ -133,4 +133,3 @@ class Piece{
 }
 
 export default Piece;
-export {FRONT_END, BACK_END};

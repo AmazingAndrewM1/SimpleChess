@@ -45,10 +45,29 @@ class Square{
     }
 }
 
+class SquareSnapshot{
+    #square;
+    #prevPiece;
+
+    constructor(square){
+        this.#square = square;
+        this.#prevPiece = square.piece;
+    }
+
+    get square(){
+        return this.#square;
+    }
+
+    get prevPiece(){
+        return this.#prevPiece;
+    }
+}
+
 class BackEnd{
     #numRows = 12;
     #numColumns = 10;
     #updatedSquares = [];
+    #squareSnapshots = [];
 
     constructor(){
         this.board = new Array(this.#numRows * this.#numColumns);
@@ -170,8 +189,17 @@ class BackEnd{
     setFromSquare(rank, file){
         this.fromSquare = this.getSquare(rank, file);
         this.possibleSquares = [];
-        if (this.fromSquare.piece.color === this.colorToMove){
-            this.possibleSquares = this.fromSquare.piece.getPseudoLegalMoves(this.fromSquare);
+        if (this.fromSquare.piece.color !== this.colorToMove){
+            return;
+        }
+        
+        for (const DESTINATION_SQUARE of this.fromSquare.piece.getPseudoLegalMoves(this.fromSquare)){
+            this.toSquare = DESTINATION_SQUARE;
+            this.doTemporaryMove();
+            if (!this.isAttacked(this.colorKingSquare)){
+                this.possibleSquares.push(this.toSquare);
+            }
+            this.undoMove();
         }
     }
 
@@ -186,6 +214,35 @@ class BackEnd{
 
     get updatedSquares(){
         return this.#updatedSquares;
+    }
+
+    isAttacked(targetSquare){
+        for (const PIECE_TYPE of [Pawn, Knight]){
+            for (const DIRECTION of PIECE_TYPE.getCaptureDirections(this.colorToMove)){
+                let maybeEnemyPiece = this.getTransposed(targetSquare, DIRECTION).piece;
+                if (maybeEnemyPiece.constructor === PIECE_TYPE && maybeEnemyPiece.color !== this.colorToMove){
+                    return true;
+                }
+            }
+        }
+
+        for (const PIECE_TYPE of [Bishop, Rook]){
+            for (const DIRECTION of PIECE_TYPE.getCaptureDirections()){
+                let square = this.getTransposed(targetSquare, DIRECTION);
+                if (square.piece.constructor === King && square.piece.color !== this.colorToMove){
+                    return true;
+                }
+                while (square !== Square.NONE && square.piece === Piece.NONE){
+                    square = this.getTransposed(square, DIRECTION);
+                }
+                let maybeEnemyPiece = square.piece;
+                if ((maybeEnemyPiece.constructor === PIECE_TYPE || maybeEnemyPiece.constructor === Queen) && maybeEnemyPiece.color !== this.colorToMove){
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /*
@@ -246,6 +303,64 @@ class BackEnd{
 
         if (this.isInCheck()){
             console.log("Check!");
+        }
+    }
+
+    doTemporaryMove(){
+        this.#squareSnapshots = [];
+
+        if (this.fromSquare.piece.color === this.toSquare.piece.color){
+            let castlingKing = this.fromSquare.piece;
+            let castlingRook = this.toSquare.piece;
+
+            let kingDestinationFile = this.toSquare.file > this.fromSquare.file ? Files.G : Files.C;
+            let rookDestinationFile = this.toSquare.file > this.fromSquare.file ? Files.F : Files.D;
+
+            this.#squareSnapshots.push(new SquareSnapshot(this.fromSquare));
+            this.#squareSnapshots.push(new SquareSnapshot(this.toSquare));
+            this.fromSquare.piece = Piece.NONE;
+            this.toSquare.piece = Piece.NONE;
+
+            let kingDestinationSquare = this.getSquare(this.fromSquare.rank, kingDestinationFile);
+            let rookDestinationSquare = this.getSquare(this.toSquare.rank, rookDestinationFile);
+            this.#squareSnapshots.push(new SquareSnapshot(kingDestinationSquare));
+            this.#squareSnapshots.push(new SquareSnapshot(rookDestinationSquare));
+            kingDestinationSquare.piece = castlingKing;
+            rookDestinationSquare.piece = castlingRook;
+
+            this.colorKingSquare = kingDestinationSquare;
+
+            console.log(this.#squareSnapshots);
+
+            return;
+        }
+
+        if (this.fromSquare.piece.constructor === Pawn && this.toSquare === this.enPassantSquare){
+            let captureSquare = this.getSquare(this.fromSquare.rank, this.toSquare.file);
+            this.#squareSnapshots.push(new SquareSnapshot(captureSquare));
+            captureSquare.piece = Piece.NONE;
+        }
+
+        this.#squareSnapshots.push(new SquareSnapshot(this.fromSquare));
+        this.#squareSnapshots.push(new SquareSnapshot(this.toSquare));
+
+        this.toSquare.piece = this.fromSquare.piece;
+        this.fromSquare.piece = Piece.NONE;
+
+        if (this.colorKingSquare.piece.constructor !== King){
+            this.colorKingSquare = this.toSquare;
+        }
+
+        console.log(this.#squareSnapshots);
+    }
+
+    undoMove(){
+        while (this.#squareSnapshots.length > 0){
+            let squareSnapshot = this.#squareSnapshots.pop();
+            squareSnapshot.square.piece = squareSnapshot.prevPiece;
+            if (squareSnapshot.square.piece.constructor === King){
+                this.colorKingSquare = squareSnapshot.square;
+            }
         }
     }
 
