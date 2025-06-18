@@ -66,7 +66,6 @@ class SquareSnapshot{
 class BackEnd{
     #numRows = 12;
     #numColumns = 10;
-    #updatedSquares = [];
     #squareSnapshots = [];
 
     constructor(){
@@ -185,6 +184,30 @@ class BackEnd{
         return this.getSquare(square.rank + direction.dy, square.file + direction.dx);
     }
 
+    isLegalMove(destinationSquare){
+        this.toSquare = destinationSquare;
+
+        if (this.fromSquare.piece.color === this.toSquare.piece.color){
+            let kingDestinationFile = this.toSquare.file > this.fromSquare.file ? Files.G : Files.C;
+            let direction = {dx: Math.sign(kingDestinationFile - this.fromSquare.file), dy: 0};
+            let square = this.fromSquare;
+            let prevFile = Files.NONE;
+            while (prevFile !== kingDestinationFile){
+                if (this.isAttacked(square)){
+                    return false;
+                }
+                prevFile = square.file;
+                square = this.getTransposed(square, direction);
+            }
+        }
+
+        // It is still possible for castling not to be permissible despite the previous checks, so testing with a temporary move is still required.
+        this.doTemporaryMove();
+        let wasAttacked = this.isAttacked(this.colorKingSquare);
+        this.undoMove();
+        return !wasAttacked;
+    }
+
     /* The square specified by row and column should have a piece on that square, so null check should not be necessary. */
     setFromSquare(rank, file){
         this.fromSquare = this.getSquare(rank, file);
@@ -194,12 +217,9 @@ class BackEnd{
         }
         
         for (const DESTINATION_SQUARE of this.fromSquare.piece.getPseudoLegalMoves(this.fromSquare)){
-            this.toSquare = DESTINATION_SQUARE;
-            this.doTemporaryMove();
-            if (!this.isAttacked(this.colorKingSquare)){
-                this.possibleSquares.push(this.toSquare);
+            if (this.isLegalMove(DESTINATION_SQUARE)){
+                this.possibleSquares.push(DESTINATION_SQUARE);
             }
-            this.undoMove();
         }
     }
 
@@ -212,8 +232,8 @@ class BackEnd{
         return this.possibleSquares;
     }
 
-    get updatedSquares(){
-        return this.#updatedSquares;
+    get squareSnapshots(){
+        return this.#squareSnapshots;
     }
 
     isAttacked(targetSquare){
@@ -300,10 +320,6 @@ class BackEnd{
         this.fromSquare = Square.NONE;
         this.toSquare = Square.NONE;
         this.isValid = false;
-
-        if (this.isInCheck()){
-            console.log("Check!");
-        }
     }
 
     doTemporaryMove(){
@@ -330,8 +346,6 @@ class BackEnd{
 
             this.colorKingSquare = kingDestinationSquare;
 
-            console.log(this.#squareSnapshots);
-
             return;
         }
 
@@ -350,8 +364,11 @@ class BackEnd{
         if (this.colorKingSquare.piece.constructor !== King){
             this.colorKingSquare = this.toSquare;
         }
+    }
 
-        console.log(this.#squareSnapshots);
+    executeMove(){
+        this.doTemporaryMove();
+        this.updateBoard();
     }
 
     undoMove(){
@@ -362,56 +379,6 @@ class BackEnd{
                 this.colorKingSquare = squareSnapshot.square;
             }
         }
-    }
-
-    executeMove(){
-        this.#updatedSquares = [];
-
-        if (this.fromSquare.piece.color === this.toSquare.piece.color){
-            let castlingKing = this.fromSquare.piece;
-            let castlingRook = this.toSquare.piece;
-
-            let kingDestinationFile = this.toSquare.file > this.fromSquare.file ? Files.G : Files.C;
-            let rookDestinationFile = this.toSquare.file > this.fromSquare.file ? Files.F : Files.D;
-
-            this.fromSquare.piece = Piece.NONE;
-            this.toSquare.piece = Piece.NONE;
-            let kingDestinationSquare = this.getSquare(this.fromSquare.rank, kingDestinationFile);
-            kingDestinationSquare.piece = castlingKing;
-            let rookDestinationSquare = this.getSquare(this.fromSquare.rank, rookDestinationFile);
-            rookDestinationSquare.piece = castlingRook;
-
-            this.updatedSquares.push(this.fromSquare);
-            this.updatedSquares.push(kingDestinationSquare);
-            this.updatedSquares.push(this.toSquare);
-            this.updatedSquares.push(rookDestinationSquare);
-
-            castlingKing.updateState();
-            castlingRook.updateState();
-
-            this.colorKingSquare = kingDestinationSquare;
-
-            this.updateBoard();
-            return;
-        }
-        
-        if (this.fromSquare.piece.constructor === Pawn && this.toSquare === this.enPassantSquare){
-            let capturedPawnSquare = BACK_END.getSquare(this.fromSquare.rank, this.toSquare.file);
-            capturedPawnSquare.piece = Piece.NONE;
-            this.updatedSquares.push(capturedPawnSquare);
-        }
-        
-        this.toSquare.piece = this.fromSquare.piece;
-        this.fromSquare.piece = Piece.NONE;
-        this.toSquare.piece.updateState();
-        this.updatedSquares.push(this.fromSquare);
-        this.updatedSquares.push(this.toSquare);
-
-        if (this.colorKingSquare.piece.constructor !== King){
-            this.colorKingSquare = this.toSquare;
-        }
-
-        this.updateBoard();
     }
 }
 
@@ -578,7 +545,8 @@ class FrontEnd{
     }
 
     updateBoard(){
-        for (let backEndSquare of BACK_END.updatedSquares){
+        for (const SQUARE_SNAPSHOT of BACK_END.squareSnapshots){
+            let backEndSquare = SQUARE_SNAPSHOT.square;
             let frontEndSquare = this.getSquare(backEndSquare.rank, backEndSquare.file);
             let targetPieces = frontEndSquare.getElementsByClassName("sprite");
             if (targetPieces.length > 0){
