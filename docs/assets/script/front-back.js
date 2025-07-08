@@ -72,6 +72,8 @@ class BackEnd{
         this.board = new Array(this.#numRows * this.#numColumns);
         this.board.fill(Square.NONE);
 
+        this.activePieces = [new Set(), new Set()];
+
         for (let rank = Ranks.ONE; rank <= Ranks.EIGHT; ++rank){
             for (let file = Files.A; file <= Files.H; ++file){
                 this.board[this.getIndex(rank, file)] = new Square(rank, file);
@@ -84,8 +86,10 @@ class BackEnd{
 
         let bishopFile1 = fileOptions[2 * Math.floor(fileOptions.length / 2 * Math.random())];
         let bishopFile2 = fileOptions[2 * Math.floor(fileOptions.length / 2 * Math.random()) + 1];
-        this.getSquare(Ranks.ONE, bishopFile1).piece = new Bishop(Piece.Color.WHITE);
-        this.getSquare(Ranks.ONE, bishopFile2).piece = new Bishop(Piece.Color.WHITE);
+        let whiteBishop1 = new Bishop(Piece.Color.WHITE, this.getSquare(Ranks.ONE, bishopFile1));
+        let whiteBishop2 = new Bishop(Piece.Color.WHITE, this.getSquare(Ranks.ONE, bishopFile2));
+        whiteBishop1.square.piece = whiteBishop1;
+        whiteBishop2.square.piece = whiteBishop2;
 
         fileOptions = fileOptions.filter(
             (file, _) => file !== bishopFile1 &&
@@ -100,9 +104,13 @@ class BackEnd{
             fileOptions[swapIndex] = temp;
         }
 
-        this.getSquare(Ranks.ONE, fileOptions[0]).piece = new Queen(Piece.Color.WHITE);
-        this.getSquare(Ranks.ONE, fileOptions[1]).piece = new Knight(Piece.Color.WHITE);
-        this.getSquare(Ranks.ONE, fileOptions[2]).piece = new Knight(Piece.Color.WHITE);
+        let whiteQueen = new Queen(Piece.Color.WHITE, this.getSquare(Ranks.ONE, fileOptions[0]));
+        let whiteKnight1 = new Knight(Piece.Color.WHITE, this.getSquare(Ranks.ONE, fileOptions[1]));
+        let whiteKnight2 = new Knight(Piece.Color.WHITE, this.getSquare(Ranks.ONE, fileOptions[2]));
+
+        whiteQueen.square.piece = whiteQueen;
+        whiteKnight1.square.piece = whiteKnight1;
+        whiteKnight2.square.piece = whiteKnight2;
 
         // Guess king and rook placement and modify, if necessary.
         let kingFile = fileOptions[3];
@@ -119,18 +127,30 @@ class BackEnd{
             rookFile2 = temp;
         }
 
-        this.whiteKingSquare = this.getSquare(Ranks.ONE, kingFile);
-        this.whiteKingSquare.piece = new King(Piece.Color.WHITE);
-        this.blackKingSquare = this.getSquare(Ranks.EIGHT, kingFile);
-        this.getSquare(Ranks.ONE, rookFile1).piece = new Rook(Piece.Color.WHITE);
-        this.getSquare(Ranks.ONE, rookFile2).piece = new Rook(Piece.Color.WHITE);
+        let whiteKing = new King(Piece.Color.WHITE, this.getSquare(Ranks.ONE, kingFile));
+        whiteKing.square.piece = whiteKing;
+        this.whiteKingSquare = whiteKing.square;
+        this.blackKingSquare = this.getSquare(Ranks.EIGHT, this.whiteKingSquare.file);
+
+        let whiteRook1 = new Rook(Piece.Color.WHITE, this.getSquare(Ranks.ONE, rookFile1));
+        let whiteRook2 = new Rook(Piece.Color.WHITE, this.getSquare(Ranks.ONE, rookFile2));
+        whiteRook1.square.piece = whiteRook1;
+        whiteRook2.square.piece = whiteRook2;
 
         for (let file = Files.A; file <= Files.H; ++file){
-            let rank1Piece = this.getSquare(Ranks.ONE, file).piece;
-            this.getSquare(Ranks.EIGHT, file).piece = new rank1Piece.constructor(Piece.Color.BLACK);
+            let rank1Square = this.getSquare(Ranks.ONE, file);
+            let rank2Square = this.getSquare(Ranks.TWO, file);
+            let rank7Square = this.getSquare(Ranks.SEVEN, file);
+            let rank8Square = this.getSquare(Ranks.EIGHT, file);
 
-            this.getSquare(Ranks.TWO, file).piece = new Pawn(Piece.Color.WHITE);
-            this.getSquare(Ranks.SEVEN, file).piece = new Pawn(Piece.Color.BLACK);
+            rank2Square.piece = new Pawn(Piece.Color.WHITE, rank2Square);
+            rank7Square.piece = new Pawn(Piece.Color.BLACK, rank7Square);
+            rank8Square.piece = new rank1Square.piece.constructor(Piece.Color.BLACK, rank8Square);
+
+            this.activePieces[Piece.Color.WHITE].add(rank1Square.piece);
+            this.activePieces[Piece.Color.WHITE].add(rank2Square.piece);
+            this.activePieces[Piece.Color.BLACK].add(rank7Square.piece);
+            this.activePieces[Piece.Color.BLACK].add(rank8Square.piece);
         }
 
         this.colorKingSquare = this.whiteKingSquare;
@@ -139,6 +159,7 @@ class BackEnd{
         this.fromSquare = Square.NONE;
         this.toSquare = Square.NONE;
         this.enPassantSquare = Square.NONE;
+        this.capturedPiece = Piece.NONE;
         this.isValid = false;
     }
 
@@ -182,6 +203,10 @@ class BackEnd{
      */
     getTransposed(square, direction){
         return this.getSquare(square.rank + direction.dy, square.file + direction.dx);
+    }
+
+    hasLegalMoves(){
+        return true;
     }
 
     isLegalMove(destinationSquare){
@@ -265,35 +290,6 @@ class BackEnd{
         return false;
     }
 
-    /*
-        Note kings cannot check each other, so this function ignores that possibility.
-    */
-    isInCheck(){
-        for (const PIECE_TYPE of [Pawn, Knight]){
-            for (const DIRECTION of PIECE_TYPE.getCaptureDirections(this.colorToMove)){
-                let maybeEnemyPiece = this.getTransposed(this.colorKingSquare, DIRECTION).piece;
-                if (maybeEnemyPiece.constructor === PIECE_TYPE && maybeEnemyPiece.color !== this.colorToMove){
-                    return true;
-                }
-            }
-        }
-
-        for (const PIECE_TYPE of [Bishop, Rook]){
-            for (const DIRECTION of PIECE_TYPE.getCaptureDirections()){
-                let square = this.getTransposed(this.colorKingSquare, DIRECTION);
-                while (square !== Square.NONE && square.piece === Piece.NONE){
-                    square = this.getTransposed(square, DIRECTION);
-                }
-                let maybeEnemyPiece = square.piece;
-                if ((maybeEnemyPiece.constructor === PIECE_TYPE || maybeEnemyPiece.constructor === Queen) && maybeEnemyPiece.color !== this.colorToMove){
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
     updateBoard(){
         this.enPassantSquare = Square.NONE;
         if (this.toSquare.piece.constructor === Pawn){
@@ -304,6 +300,11 @@ class BackEnd{
             else if (this.toSquare.file === this.fromSquare.file && this.toSquare !== this.getTransposed(this.fromSquare, forwardDirection)){
                 this.enPassantSquare = this.getTransposed(this.fromSquare, forwardDirection);
             }
+        }
+
+        if (this.capturedPiece !== Piece.NONE){
+            this.activePieces[this.capturedPiece.color].delete(this.capturedPiece);
+            this.capturedPiece = Piece.NONE;
         }
 
         if (this.colorToMove === Piece.Color.WHITE){
@@ -320,12 +321,16 @@ class BackEnd{
         this.fromSquare = Square.NONE;
         this.toSquare = Square.NONE;
         this.isValid = false;
+
+        let isCheck = this.isAttacked(this.colorKingSquare);
+        let hasLegalMoves = hasLegalMoves();
     }
 
     doTemporaryMove(){
         this.#squareSnapshots = [];
 
         if (this.fromSquare.piece.color === this.toSquare.piece.color){
+            this.capturedPiece = Piece.NONE;
             let castlingKing = this.fromSquare.piece;
             let castlingRook = this.toSquare.piece;
 
@@ -349,8 +354,10 @@ class BackEnd{
             return;
         }
 
+        this.capturedPiece = this.toSquare.piece;
         if (this.fromSquare.piece.constructor === Pawn && this.toSquare === this.enPassantSquare){
             let captureSquare = this.getSquare(this.fromSquare.rank, this.toSquare.file);
+            this.capturedPiece = captureSquare.piece;
             this.#squareSnapshots.push(new SquareSnapshot(captureSquare));
             captureSquare.piece = Piece.NONE;
         }

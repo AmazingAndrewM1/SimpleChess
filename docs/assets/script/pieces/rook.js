@@ -1,8 +1,8 @@
 import {Piece} from "./piece-module.js";
 
 class Rook extends Piece{
-    constructor(color){
-        super(color);
+    constructor(color, square){
+        super(color, square);
     }
 
     static getCaptureDirections(){

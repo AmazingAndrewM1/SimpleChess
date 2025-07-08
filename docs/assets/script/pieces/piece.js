@@ -1,4 +1,4 @@
-import {FRONT_END, BACK_END, Square} from "../front-back.js";
+import {BACK_END, Square} from "../front-back.js";
 import {King, Queen, Rook, Bishop, Knight, Pawn} from "./piece-module.js";
 
 class Piece{
@@ -104,9 +104,10 @@ class Piece{
 
     static NONE = new Piece(Piece.Color.NONE);
 
-    constructor(color){
+    constructor(color, square){
         this._hasMoved = false;
         this._color = color;
+        this._square = square;
     }
 
     get hasMoved(){
@@ -117,6 +118,9 @@ class Piece{
         return this._color;
     }
 
+    get square(){
+        return this._square;
+    }
     /**
     Generate all the destinations squares that abide by the rules of movement for the given piece 
     while ignoring if the execution of that move would leave the king in check.

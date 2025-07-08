@@ -3,8 +3,8 @@ import {BACK_END, Square} from "../front-back.js";
 import {Files} from "../utils.js";
 
 class King extends Piece{
-    constructor(color){
-        super(color);
+    constructor(color, square){
+        super(color, square);
     }
 
     static getCaptureDirections(){

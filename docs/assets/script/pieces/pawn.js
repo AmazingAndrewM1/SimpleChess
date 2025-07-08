@@ -2,8 +2,8 @@ import {Piece} from "./piece-module.js";
 import {BACK_END, Square} from "../front-back.js";
 
 class Pawn extends Piece{
-    constructor(color){
-        super(color);
+    constructor(color, square){
+        super(color, square);
     }
 
     static getCaptureDirections(color){
