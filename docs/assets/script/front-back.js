@@ -46,6 +46,7 @@ class Square{
 }
 
 class SquareSnapshot{
+    static NONE = new SquareSnapshot(Square.NONE);
     #square;
     #prevPiece;
 
@@ -72,7 +73,7 @@ class BackEnd{
         this.board = new Array(this.#numRows * this.#numColumns);
         this.board.fill(Square.NONE);
 
-        this.activePieces = [new Set(), new Set()];
+        this.pieceSquares = [new Set(), new Set()];
 
         for (let rank = Ranks.ONE; rank <= Ranks.EIGHT; ++rank){
             for (let file = Files.A; file <= Files.H; ++file){
@@ -86,10 +87,11 @@ class BackEnd{
 
         let bishopFile1 = fileOptions[2 * Math.floor(fileOptions.length / 2 * Math.random())];
         let bishopFile2 = fileOptions[2 * Math.floor(fileOptions.length / 2 * Math.random()) + 1];
-        let whiteBishop1 = new Bishop(Piece.Color.WHITE, this.getSquare(Ranks.ONE, bishopFile1));
-        let whiteBishop2 = new Bishop(Piece.Color.WHITE, this.getSquare(Ranks.ONE, bishopFile2));
-        whiteBishop1.square.piece = whiteBishop1;
-        whiteBishop2.square.piece = whiteBishop2;
+        let bishopSquare1 = this.getSquare(Ranks.ONE, bishopFile1);
+        let bishopSquare2 = this.getSquare(Ranks.ONE, bishopFile2);
+
+        bishopSquare1.piece = new Bishop(Piece.Color.WHITE);
+        bishopSquare2.piece = new Bishop(Piece.Color.WHITE);
 
         fileOptions = fileOptions.filter(
             (file, _) => file !== bishopFile1 &&
@@ -104,13 +106,13 @@ class BackEnd{
             fileOptions[swapIndex] = temp;
         }
 
-        let whiteQueen = new Queen(Piece.Color.WHITE, this.getSquare(Ranks.ONE, fileOptions[0]));
-        let whiteKnight1 = new Knight(Piece.Color.WHITE, this.getSquare(Ranks.ONE, fileOptions[1]));
-        let whiteKnight2 = new Knight(Piece.Color.WHITE, this.getSquare(Ranks.ONE, fileOptions[2]));
+        let queenSquare = this.getSquare(Ranks.ONE, fileOptions[0]);
+        let knightSquare1 = this.getSquare(Ranks.ONE, fileOptions[1]);
+        let knightSquare2 = this.getSquare(Ranks.ONE, fileOptions[2]);
 
-        whiteQueen.square.piece = whiteQueen;
-        whiteKnight1.square.piece = whiteKnight1;
-        whiteKnight2.square.piece = whiteKnight2;
+        queenSquare.piece = new Queen(Piece.Color.WHITE);
+        knightSquare1.piece = new Knight(Piece.Color.WHITE);
+        knightSquare2.piece = new Knight(Piece.Color.WHITE);
 
         // Guess king and rook placement and modify, if necessary.
         let kingFile = fileOptions[3];
@@ -127,15 +129,14 @@ class BackEnd{
             rookFile2 = temp;
         }
 
-        let whiteKing = new King(Piece.Color.WHITE, this.getSquare(Ranks.ONE, kingFile));
-        whiteKing.square.piece = whiteKing;
-        this.whiteKingSquare = whiteKing.square;
-        this.blackKingSquare = this.getSquare(Ranks.EIGHT, this.whiteKingSquare.file);
+        this.whiteKingSquare = this.getSquare(Ranks.ONE, kingFile);
+        this.blackKingSquare = this.getSquare(Ranks.EIGHT, kingFile);
+        let rookSquare1 = this.getSquare(Ranks.ONE, rookFile1);
+        let rookSquare2 = this.getSquare(Ranks.ONE, rookFile2);
 
-        let whiteRook1 = new Rook(Piece.Color.WHITE, this.getSquare(Ranks.ONE, rookFile1));
-        let whiteRook2 = new Rook(Piece.Color.WHITE, this.getSquare(Ranks.ONE, rookFile2));
-        whiteRook1.square.piece = whiteRook1;
-        whiteRook2.square.piece = whiteRook2;
+        this.whiteKingSquare.piece = new King(Piece.Color.WHITE);
+        rookSquare1.piece = new Rook(Piece.Color.WHITE);
+        rookSquare2.piece = new Rook(Piece.Color.WHITE);
 
         for (let file = Files.A; file <= Files.H; ++file){
             let rank1Square = this.getSquare(Ranks.ONE, file);
@@ -143,14 +144,14 @@ class BackEnd{
             let rank7Square = this.getSquare(Ranks.SEVEN, file);
             let rank8Square = this.getSquare(Ranks.EIGHT, file);
 
-            rank2Square.piece = new Pawn(Piece.Color.WHITE, rank2Square);
-            rank7Square.piece = new Pawn(Piece.Color.BLACK, rank7Square);
-            rank8Square.piece = new rank1Square.piece.constructor(Piece.Color.BLACK, rank8Square);
+            rank2Square.piece = new Pawn(Piece.Color.WHITE);
+            rank7Square.piece = new Pawn(Piece.Color.BLACK);
+            rank8Square.piece = new rank1Square.piece.constructor(Piece.Color.BLACK);
 
-            this.activePieces[Piece.Color.WHITE].add(rank1Square.piece);
-            this.activePieces[Piece.Color.WHITE].add(rank2Square.piece);
-            this.activePieces[Piece.Color.BLACK].add(rank7Square.piece);
-            this.activePieces[Piece.Color.BLACK].add(rank8Square.piece);
+            this.pieceSquares[Piece.Color.WHITE].add(rank1Square);
+            this.pieceSquares[Piece.Color.WHITE].add(rank2Square);
+            this.pieceSquares[Piece.Color.BLACK].add(rank7Square);
+            this.pieceSquares[Piece.Color.BLACK].add(rank8Square);
         }
 
         this.colorKingSquare = this.whiteKingSquare;
@@ -159,7 +160,7 @@ class BackEnd{
         this.fromSquare = Square.NONE;
         this.toSquare = Square.NONE;
         this.enPassantSquare = Square.NONE;
-        this.capturedPiece = Piece.NONE;
+        this.captureSquareSnapshot = Square.NONE;
         this.isValid = false;
     }
 
@@ -188,6 +189,20 @@ class BackEnd{
         let r = rank - Ranks.ONE;
         let c = file - Files.A;
         return r * this.#numColumns + c + OFFSET;
+    }
+
+    findSquare(piece){
+        if (piece.constructor === King){
+            return piece.color === Piece.Color.WHITE ? this.whiteKingSquare : this.blackKingSquare;
+        }
+
+        for (const SQUARE of this.pieceSquares[piece.color].values()){
+            if (SQUARE.piece === piece){
+                return SQUARE;
+            }
+        }
+
+        throw Error("piece not found");
     }
 
     getSquare(rank, file){
@@ -241,7 +256,7 @@ class BackEnd{
             return;
         }
         
-        for (const DESTINATION_SQUARE of this.fromSquare.piece.getPseudoLegalMoves(this.fromSquare)){
+        for (const DESTINATION_SQUARE of this.fromSquare.piece.getPseudoLegalMoves()){
             if (this.isLegalMove(DESTINATION_SQUARE)){
                 this.possibleSquares.push(DESTINATION_SQUARE);
             }
@@ -302,10 +317,22 @@ class BackEnd{
             }
         }
 
-        if (this.capturedPiece !== Piece.NONE){
-            this.activePieces[this.capturedPiece.color].delete(this.capturedPiece);
-            this.capturedPiece = Piece.NONE;
+        for (const SQUARE_SNAPSHOTS of this.#squareSnapshots){
+            let square = SQUARE_SNAPSHOTS.square;
+            if (square.piece === Piece.NONE){
+                this.pieceSquares[this.colorToMove].delete(square);
+            }
+            else{
+                this.pieceSquares[this.colorToMove].add(square);
+            }
         }
+
+        if (this.captureSquareSnapshot !== SquareSnapshot.NONE){
+            this.pieceSquares[this.captureSquareSnapshot.prevPiece.color].delete(this.captureSquareSnapshot.square);
+            this.captureSquareSnapshot = SquareSnapshot.NONE;
+        }
+
+        this.toSquare.piece.updateState();
 
         if (this.colorToMove === Piece.Color.WHITE){
             this.whiteKingSquare = this.colorKingSquare;
@@ -321,16 +348,13 @@ class BackEnd{
         this.fromSquare = Square.NONE;
         this.toSquare = Square.NONE;
         this.isValid = false;
-
-        let isCheck = this.isAttacked(this.colorKingSquare);
-        let hasLegalMoves = hasLegalMoves();
     }
 
     doTemporaryMove(){
         this.#squareSnapshots = [];
 
         if (this.fromSquare.piece.color === this.toSquare.piece.color){
-            this.capturedPiece = Piece.NONE;
+            this.captureSquareSnapshot = SquareSnapshot.NONE;
             let castlingKing = this.fromSquare.piece;
             let castlingRook = this.toSquare.piece;
 
@@ -354,12 +378,17 @@ class BackEnd{
             return;
         }
 
-        this.capturedPiece = this.toSquare.piece;
         if (this.fromSquare.piece.constructor === Pawn && this.toSquare === this.enPassantSquare){
             let captureSquare = this.getSquare(this.fromSquare.rank, this.toSquare.file);
-            this.capturedPiece = captureSquare.piece;
-            this.#squareSnapshots.push(new SquareSnapshot(captureSquare));
+            this.captureSquareSnapshot = new SquareSnapshot(captureSquare);
+            this.#squareSnapshots.push(this.captureSquareSnapshot);
             captureSquare.piece = Piece.NONE;
+        }
+        else if (this.toSquare.piece !== Piece.NONE){
+            this.captureSquareSnapshot = new SquareSnapshot(this.toSquare);
+        }
+        else{
+            this.captureSquareSnapshot = SquareSnapshot.NONE;
         }
 
         this.#squareSnapshots.push(new SquareSnapshot(this.fromSquare));

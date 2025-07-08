@@ -2,8 +2,8 @@ import {Piece} from "./piece-module.js";
 import {BACK_END, Square} from "../front-back.js";
 
 class Pawn extends Piece{
-    constructor(color, square){
-        super(color, square);
+    constructor(color){
+        super(color);
     }
 
     static getCaptureDirections(color){
@@ -25,7 +25,8 @@ class Pawn extends Piece{
         ];
     }   
 
-    getPseudoLegalMoves(from){
+    getPseudoLegalMoves(){
+        let from = super.findSquare();
         let moves = [];
         let captureDirections = Pawn.getCaptureDirections(this.color);
         let forwardDirection = {dx: 0, dy: captureDirections[0].dy};

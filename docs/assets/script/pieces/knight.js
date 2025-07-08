@@ -1,8 +1,9 @@
 import {Piece} from "./piece-module.js";
+import {BACK_END} from "../front-back.js";
 
 class Knight extends Piece{
-    constructor(color, square){
-        super(color, square);
+    constructor(color){
+        super(color);
     }
 
     static getCaptureDirections(color){
@@ -22,7 +23,8 @@ class Knight extends Piece{
         ];
     }
 
-    getPseudoLegalMoves(from){
+    getPseudoLegalMoves(){
+        let from = super.findSquare();
         return Piece.getLeapingMoves(Knight.getCaptureDirections(), from);
     }
 }

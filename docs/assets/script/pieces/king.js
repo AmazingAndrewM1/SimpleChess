@@ -3,8 +3,8 @@ import {BACK_END, Square} from "../front-back.js";
 import {Files} from "../utils.js";
 
 class King extends Piece{
-    constructor(color, square){
-        super(color, square);
+    constructor(color){
+        super(color);
     }
 
     static getCaptureDirections(){
@@ -20,7 +20,8 @@ class King extends Piece{
         ];
     }
 
-    getPseudoLegalMoves(from){
+    getPseudoLegalMoves(){
+        let from = super.findSquare();
         let moves = Piece.getLeapingMoves(King.getCaptureDirections(), from);
 
         let kingsideRookSquare = this.getRookSquare(from, Files.G, Files.F);

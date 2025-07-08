@@ -1,8 +1,8 @@
 import {Piece} from "./piece-module.js";
 
 class Rook extends Piece{
-    constructor(color, square){
-        super(color, square);
+    constructor(color){
+        super(color);
     }
 
     static getCaptureDirections(){
@@ -14,7 +14,8 @@ class Rook extends Piece{
         ];
     }
 
-    getPseudoLegalMoves(from){
+    getPseudoLegalMoves(){
+        let from = super.findSquare();
         return Piece.getSlidingMoves(Rook.getCaptureDirections(), from);
     }
 }

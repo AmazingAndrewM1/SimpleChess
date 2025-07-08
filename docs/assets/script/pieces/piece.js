@@ -104,10 +104,9 @@ class Piece{
 
     static NONE = new Piece(Piece.Color.NONE);
 
-    constructor(color, square){
+    constructor(color){
         this._hasMoved = false;
         this._color = color;
-        this._square = square;
     }
 
     get hasMoved(){
@@ -117,18 +116,19 @@ class Piece{
     get color(){
         return this._color;
     }
-
-    get square(){
-        return this._square;
-    }
+    
     /**
     Generate all the destinations squares that abide by the rules of movement for the given piece 
     while ignoring if the execution of that move would leave the king in check.
     @param {Square} from - Square from which the current piece stands
     @returns {Square[]} - destinationSquares
     */
-    getPseudoLegalMoves(from){
+    getPseudoLegalMoves(){
         return [];
+    }
+
+    findSquare(){
+        return BACK_END.findSquare(this);
     }
 
     updateState(){
