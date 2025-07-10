@@ -221,7 +221,16 @@ class BackEnd{
     }
 
     hasLegalMoves(){
-        return true;
+        for (const SQUARE of this.pieceSquares[this.colorToMove]){
+            this.fromSquare = SQUARE;
+            for (const DESTINATION_SQUARE of SQUARE.piece.getPseudoLegalMoves()){
+                if (this.isLegalMove(DESTINATION_SQUARE)){
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     isLegalMove(destinationSquare){
@@ -345,6 +354,9 @@ class BackEnd{
             this.colorKingSquare = this.whiteKingSquare;
         }
 
+        // let isCheck = this.isAttacked(this.colorKingSquare);
+        // let hasLegalMoves = this.hasLegalMoves();
+
         this.fromSquare = Square.NONE;
         this.toSquare = Square.NONE;
         this.isValid = false;
@@ -414,6 +426,24 @@ class BackEnd{
             if (squareSnapshot.square.piece.constructor === King){
                 this.colorKingSquare = squareSnapshot.square;
             }
+        }
+    }
+
+    getState(){
+        let isCheck = this.isAttacked(this.colorKingSquare);
+        let hasLegalMoves = this.hasLegalMoves();
+
+        if (isCheck && hasLegalMoves){
+            return "Check";
+        }
+        else if (isCheck && !hasLegalMoves){
+            return "Checkmate";
+        }
+        else if (!hasLegalMoves){
+            return "Stalemate";
+        }
+        else{
+            return "Normal";
         }
     }
 }
@@ -637,6 +667,7 @@ class FrontEnd{
         if (BACK_END.isValid){
             BACK_END.executeMove();
             this.updateBoard();
+            console.log(BACK_END.getState());
         }
     }
 

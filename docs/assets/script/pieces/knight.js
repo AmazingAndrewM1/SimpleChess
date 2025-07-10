@@ -1,5 +1,4 @@
 import {Piece} from "./piece-module.js";
-import {BACK_END} from "../front-back.js";
 
 class Knight extends Piece{
     constructor(color){
