@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "ts-add-js-extension": "^1.6.6",
+    "typescript": "^6.0.3"
+  },
+  "scripts": {
+    "build": "tsc -p docs/assets/ts-script && ts-add-js-extension --dir=./docs/assets/js-built",
+    "start": "node dist/app.js"
+  },
+  "type": "module"
+}
