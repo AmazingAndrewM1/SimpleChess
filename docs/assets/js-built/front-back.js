@@ -1,16 +1,14 @@
 // import {Piece, King, Queen, Rook, Bishop, Knight, Pawn} from "./pieces/piece-module.js";
-import { Files, Ranks } from "./utils";
+import { Files, Ranks } from "./utils.js";
 function initializeHTML() {
     let board = document.getElementById("board");
     if (board === null) {
         throw new Error("Board element not found in DOM");
     }
-
     let turnContainer = document.getElementById("turn-container");
     if (turnContainer === null) {
         throw new Error("Turn Container element not found in DOM");
     }
-    
     let isLight = true;
     for (let rank = Ranks.EIGHT; rank >= Ranks.ONE; --rank) {
         for (let file = Files.A; file <= Files.H; ++file) {
@@ -22,27 +20,23 @@ function initializeHTML() {
         }
         isLight = !isLight;
     }
-
     let rowLabelContainer = document.getElementById("row-label-container");
-    if (rowLabelContainer === null){
+    if (rowLabelContainer === null) {
         throw new Error("rowLabelContainer element not found in DOM");
     }
-
     let charCode1 = "1".charCodeAt(0);
-    for (let rank = Ranks.ONE; rank <= Ranks.EIGHT; ++rank){
+    for (let rank = Ranks.ONE; rank <= Ranks.EIGHT; ++rank) {
         let label = document.createElement("div");
         label.classList.add("label");
         label.innerHTML = String.fromCharCode(charCode1 + Ranks.EIGHT - rank);
         rowLabelContainer.appendChild(label);
     }
-
     let columnLabelContainer = document.getElementById("column-label-container");
-    if (columnLabelContainer === null){
+    if (columnLabelContainer === null) {
         throw new Error("columnLabelContainer element not found in DOM");
     }
-
     let charCodea = "a".charCodeAt(0);
-    for (let file = Files.A; file <= Files.H; ++file){
+    for (let file = Files.A; file <= Files.H; ++file) {
         let label = document.createElement("div");
         label.classList.add("label");
         label.innerHTML = String.fromCharCode(charCodea + file - 1);
