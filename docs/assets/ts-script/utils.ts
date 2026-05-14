@@ -28,4 +28,34 @@ enum Colors{
     NONE
 }
 
-export {Files, Ranks};
+enum PieceType{
+    PAWN,
+    KNIGHT,
+    BISHOP,
+    ROOK,
+    QUEEN,
+    KING,
+    NONE
+}
+
+interface Piece{
+    type: PieceType,
+    color: Colors
+}
+
+interface OnBoardSquare{
+    isOnBoard: true,
+    piece: Piece,
+    file: Files,
+    rank: Ranks
+}
+
+interface OffBoardSquare{
+    isOnBoard: false
+}
+
+type Square = OnBoardSquare | OffBoardSquare
+
+const OFF_BOARD_SQUARE: OffBoardSquare = {isOnBoard: false};
+
+export {Files, Ranks, Piece, OnBoardSquare, OFF_BOARD_SQUARE, Square};

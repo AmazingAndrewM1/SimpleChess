@@ -28,4 +28,15 @@ var Colors;
     Colors[Colors["BLACK"] = 1] = "BLACK";
     Colors[Colors["NONE"] = 2] = "NONE";
 })(Colors || (Colors = {}));
-export { Files, Ranks };
+var PieceType;
+(function (PieceType) {
+    PieceType[PieceType["PAWN"] = 0] = "PAWN";
+    PieceType[PieceType["KNIGHT"] = 1] = "KNIGHT";
+    PieceType[PieceType["BISHOP"] = 2] = "BISHOP";
+    PieceType[PieceType["ROOK"] = 3] = "ROOK";
+    PieceType[PieceType["QUEEN"] = 4] = "QUEEN";
+    PieceType[PieceType["KING"] = 5] = "KING";
+    PieceType[PieceType["NONE"] = 6] = "NONE";
+})(PieceType || (PieceType = {}));
+const OFF_BOARD_SQUARE = { isOnBoard: false };
+export { Files, Ranks, OFF_BOARD_SQUARE };
