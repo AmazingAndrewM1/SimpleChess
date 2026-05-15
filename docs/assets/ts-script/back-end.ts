@@ -1,16 +1,64 @@
-import {OnBoardSquare, OFF_BOARD_SQUARE, Square} from "./utils";
+import {Ranks, Files, PieceType, Colors, Piece, OnBoardSquare, OFF_BOARD_SQUARE, Square} from "./utils";
 
 interface BackEnd{
-    board: Square[]
+    board: Square[],
+    colorToMove: Colors
+}
+
+const NUM_ROWS = 12;
+const NUM_COLUMNS = 10;
+let backEnd: BackEnd | null = null;
+
+function getBackEnd(){
+    if (backEnd === null){
+        throw new Error("backEnd not initialized");
+    }
+    return backEnd;
+}
+
+function getIndex(rank: Ranks, file: Files){
+    let rankOffset = rank - Ranks.ONE;
+    let fileOffset = file - Files.A;
+
+    return NUM_COLUMNS * (rankOffset + 2) + fileOffset + 1;
+}
+
+function getSquare(rank: Ranks, file: Files){
+    let backEnd = getBackEnd();
+    let square = backEnd.board[getIndex(rank, file)]
+    if (!square.isOnBoard){
+        throw new Error("Square is not on board");
+    }
+    return square;
+}
+
+function getColorToMove(){
+    let backEnd = getBackEnd();
+    return backEnd.colorToMove;
 }
 
 function initialize(){
-    let numRows = 12; let numColumns = 10;
-    const BACK_END: BackEnd = {
-        board: new Array<Square>(numRows * numColumns)
+    let board = new Array<Square>(NUM_ROWS * NUM_COLUMNS);
+    
+    board.fill(OFF_BOARD_SQUARE);
+    for (let rank = Ranks.ONE; rank <= Ranks.EIGHT; ++rank){
+        for (let file = Files.A; file <= Files.H; ++file){
+            board[getIndex(rank, file)] = {
+                isOnBoard: true,
+                piece: {
+                    type: PieceType.PAWN,
+                    color: Colors.WHITE
+                },
+                rank: rank,
+                file: file
+            }
+        }
     }
-    BACK_END.board.fill(OFF_BOARD_SQUARE);
-    console.log(OFF_BOARD_SQUARE);
+
+    backEnd = {
+        board: board,
+        colorToMove: Colors.WHITE
+    }
 }
 
 // class BackEnd{
@@ -397,4 +445,4 @@ function initialize(){
 //     }
 // }
 
-export {initialize}
+export {initialize, getSquare, getColorToMove}

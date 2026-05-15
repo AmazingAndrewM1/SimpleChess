@@ -1,5 +1,46 @@
 // import {Piece, King, Queen, Rook, Bishop, Knight, Pawn} from "./pieces/piece-module.js";
-import { Files, Ranks } from "./utils.js";
+import { Files, Ranks, Colors, PieceType } from "./utils.js";
+import { getSquare, getColorToMove } from "./back-end.js";
+let frontEnd = null;
+function getFrontEnd() {
+    if (frontEnd === null) {
+        throw new Error("frontEnd not initialized");
+    }
+    return frontEnd;
+}
+function colorToString(color) {
+    switch (color) {
+        case Colors.WHITE:
+            return "white";
+        case Colors.BLACK:
+            return "black";
+    }
+}
+function pieceTypeToString(pieceType) {
+    switch (pieceType) {
+        case PieceType.PAWN:
+            return "pawn";
+        case PieceType.KNIGHT:
+            return "knight";
+        case PieceType.BISHOP:
+            return "bishop";
+        case PieceType.ROOK:
+            return "rook";
+        case PieceType.QUEEN:
+            return "queen";
+        case PieceType.KING:
+            return "king";
+    }
+}
+function getPieceElement(piece) {
+    let pieceDiv = document.createElement("div");
+    let pieceTypeString = pieceTypeToString(piece.type);
+    let pieceColorString = colorToString(piece.color);
+    pieceDiv.classList.add("sprite", pieceTypeString, pieceColorString);
+    pieceDiv.role = "img"; /* Console warning for accessibility otherwise */
+    pieceDiv.ariaLabel = `${pieceColorString} ${pieceTypeString}`;
+    return pieceDiv;
+}
 function initializeHTML() {
     let board = document.getElementById("board");
     if (board === null) {
@@ -8,10 +49,14 @@ function initializeHTML() {
     let isLight = true;
     for (let rank = Ranks.EIGHT; rank >= Ranks.ONE; --rank) {
         for (let file = Files.A; file <= Files.H; ++file) {
-            let square = document.createElement("div");
-            square.classList.add("square");
-            square.classList.add(isLight ? "light" : "dark");
-            board.appendChild(square);
+            let frontEndSquare = document.createElement("div");
+            frontEndSquare.classList.add("square");
+            frontEndSquare.classList.add(isLight ? "light" : "dark");
+            let backEndSquare = getSquare(rank, file);
+            if (backEndSquare.piece !== null) {
+                frontEndSquare.appendChild(getPieceElement(backEndSquare.piece));
+            }
+            board.appendChild(frontEndSquare);
             isLight = !isLight;
         }
         isLight = !isLight;
@@ -42,7 +87,14 @@ function initializeHTML() {
     if (turnContainer === null) {
         throw new Error("Turn Container element not found in DOM");
     }
-    turnContainer.classList.add("white");
+    turnContainer.className = colorToString(getColorToMove());
+    frontEnd = {
+        board: board,
+        turnContainer: turnContainer,
+        rowLabelContainer: rowLabelContainer,
+        columnLabelContainer: columnLabelContainer,
+        isWhiteOnBottom: true
+    };
 }
 // class FrontEnd{
 //     constructor(){

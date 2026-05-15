@@ -26,7 +26,6 @@ var Colors;
 (function (Colors) {
     Colors[Colors["WHITE"] = 0] = "WHITE";
     Colors[Colors["BLACK"] = 1] = "BLACK";
-    Colors[Colors["NONE"] = 2] = "NONE";
 })(Colors || (Colors = {}));
 var PieceType;
 (function (PieceType) {
@@ -36,7 +35,6 @@ var PieceType;
     PieceType[PieceType["ROOK"] = 3] = "ROOK";
     PieceType[PieceType["QUEEN"] = 4] = "QUEEN";
     PieceType[PieceType["KING"] = 5] = "KING";
-    PieceType[PieceType["NONE"] = 6] = "NONE";
 })(PieceType || (PieceType = {}));
 const OFF_BOARD_SQUARE = { isOnBoard: false };
-export { Files, Ranks, OFF_BOARD_SQUARE };
+export { Files, Ranks, PieceType, Colors, OFF_BOARD_SQUARE };
