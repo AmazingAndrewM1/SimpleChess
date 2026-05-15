@@ -1,4 +1,4 @@
-import {Ranks, Files, PieceType, Colors, Piece, OnBoardSquare, OFF_BOARD_SQUARE, Square} from "./utils";
+import {Ranks, Files, PieceTypes, Colors, Piece, OnBoardSquare, OFF_BOARD_SQUARE, Square} from "./utils";
 
 interface BackEnd{
     board: Square[],
@@ -45,10 +45,7 @@ function initialize(){
         for (let file = Files.A; file <= Files.H; ++file){
             board[getIndex(rank, file)] = {
                 isOnBoard: true,
-                piece: {
-                    type: PieceType.PAWN,
-                    color: Colors.WHITE
-                },
+                piece: null,
                 rank: rank,
                 file: file
             }
@@ -58,6 +55,95 @@ function initialize(){
     backEnd = {
         board: board,
         colorToMove: Colors.WHITE
+    }
+
+    let numFiles = 8;
+
+    // Ensure bishops are on opposite colors
+    let bishopFile1 = 2 * Math.floor(numFiles / 2 * Math.random()) + 1;
+    let bishopFile2 = 2 * Math.floor(numFiles / 2 * Math.random()) + 2;
+
+    // Only consider files not in bishopFile1 or bishopFile2
+    let fileOptions: Files[] = [];
+    for (let file = Files.A; file <= Files.H; ++file){
+        if (file !== bishopFile1 && file !== bishopFile2){
+            fileOptions.push(file);
+        }
+    }
+
+    // Shuffle with Fisher-Yates algorithm
+    for (let i = 0; i < fileOptions.length - 1; ++i){
+        let swapIndex = Math.floor(Math.random() * (fileOptions.length - i)) + i;
+        let temp = fileOptions[i];
+        fileOptions[i] = fileOptions[swapIndex];
+        fileOptions[swapIndex] = temp;
+    }
+
+    let [knightFile1, knightFile2, queenFile, rookFile1, rookFile2, kingFile] = fileOptions;
+
+    // Ensure king is in between rooks
+    if (kingFile < rookFile1 === rookFile1 < rookFile2){
+        let temp = kingFile;
+        kingFile = rookFile1;
+        rookFile1 = temp;
+    }
+    else if (kingFile < rookFile2 === rookFile2 < rookFile1){
+        let temp = kingFile;
+        kingFile = rookFile2;
+        rookFile2 = temp;
+    }
+
+    getSquare(Ranks.ONE, knightFile1).piece = {
+        type: PieceTypes.KNIGHT,
+        color: Colors.WHITE
+    };
+    getSquare(Ranks.ONE, knightFile2).piece = {
+        type: PieceTypes.KNIGHT,
+        color: Colors.WHITE
+    };
+    getSquare(Ranks.ONE, bishopFile1).piece = {
+        type: PieceTypes.BISHOP,
+        color: Colors.WHITE
+    };
+    getSquare(Ranks.ONE, bishopFile2).piece = {
+        type: PieceTypes.BISHOP,
+        color: Colors.WHITE
+    };
+    getSquare(Ranks.ONE, rookFile1).piece = {
+        type: PieceTypes.ROOK,
+        color: Colors.WHITE
+    };
+    getSquare(Ranks.ONE, rookFile2).piece = {
+        type: PieceTypes.ROOK,
+        color: Colors.WHITE
+    };
+    getSquare(Ranks.ONE, queenFile).piece = {
+        type: PieceTypes.QUEEN,
+        color: Colors.WHITE
+    };
+    getSquare(Ranks.ONE, kingFile).piece = {
+        type: PieceTypes.KING,
+        color: Colors.WHITE
+    };
+
+    for (let file = Files.A; file <= Files.H; ++file){
+        getSquare(Ranks.TWO, file).piece = {
+            type: PieceTypes.PAWN,
+            color: Colors.WHITE
+        };
+        getSquare(Ranks.SEVEN, file).piece = {
+            type: PieceTypes.PAWN,
+            color: Colors.BLACK
+        }
+
+        let rank1Piece = getSquare(Ranks.ONE, file).piece;
+        if (rank1Piece === null){
+            throw new Error("Rank1 Piece not yet initialized");
+        }
+        getSquare(Ranks.EIGHT, file).piece = {
+            type: rank1Piece.type,
+            color: Colors.BLACK
+        }
     }
 }
 

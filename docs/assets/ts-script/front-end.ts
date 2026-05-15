@@ -1,5 +1,5 @@
 // import {Piece, King, Queen, Rook, Bishop, Knight, Pawn} from "./pieces/piece-module.js";
-import { Files, Ranks, Colors, Piece, PieceType } from "./utils";
+import { Files, Ranks, Colors, Piece, PieceTypes } from "./utils";
 import { getSquare, getColorToMove } from "./back-end";
 
 interface FrontEnd{
@@ -28,19 +28,19 @@ function colorToString(color: Colors){
     }
 }
 
-function pieceTypeToString(pieceType: PieceType){
+function pieceTypeToString(pieceType: PieceTypes){
     switch (pieceType){
-        case PieceType.PAWN:
+        case PieceTypes.PAWN:
             return "pawn";
-        case PieceType.KNIGHT:
+        case PieceTypes.KNIGHT:
             return "knight";
-        case PieceType.BISHOP:
+        case PieceTypes.BISHOP:
             return "bishop";
-        case PieceType.ROOK:
+        case PieceTypes.ROOK:
             return "rook";
-        case PieceType.QUEEN:
+        case PieceTypes.QUEEN:
             return "queen";
-        case PieceType.KING:
+        case PieceTypes.KING:
             return "king";
     }
 }

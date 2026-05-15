@@ -1,4 +1,4 @@
-enum Files{
+const enum Files{
     A = 1,
     B,
     C,
@@ -10,7 +10,7 @@ enum Files{
     NONE
 }
 
-enum Ranks{
+const enum Ranks{
     ONE = 1,
     TWO,
     THREE,
@@ -22,12 +22,12 @@ enum Ranks{
     NONE
 }
 
-enum Colors{
+const enum Colors{
     WHITE,
     BLACK
 }
 
-enum PieceType{
+const enum PieceTypes{
     PAWN,
     KNIGHT,
     BISHOP,
@@ -37,7 +37,7 @@ enum PieceType{
 }
 
 interface Piece{
-    type: PieceType,
+    type: PieceTypes,
     color: Colors
 }
 
@@ -56,4 +56,4 @@ type Square = OnBoardSquare | OffBoardSquare
 
 const OFF_BOARD_SQUARE: OffBoardSquare = {isOnBoard: false};
 
-export {Files, Ranks, PieceType, Colors, Piece, OnBoardSquare, OFF_BOARD_SQUARE, Square};
+export {Files, Ranks, PieceTypes, Colors, Piece, OnBoardSquare, OFF_BOARD_SQUARE, Square};

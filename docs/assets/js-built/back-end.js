@@ -1,4 +1,4 @@
-import { Ranks, Files, PieceType, Colors, OFF_BOARD_SQUARE } from "./utils.js";
+import { OFF_BOARD_SQUARE } from "./utils.js";
 const NUM_ROWS = 12;
 const NUM_COLUMNS = 10;
 let backEnd = null;
@@ -9,8 +9,8 @@ function getBackEnd() {
     return backEnd;
 }
 function getIndex(rank, file) {
-    let rankOffset = rank - Ranks.ONE;
-    let fileOffset = file - Files.A;
+    let rankOffset = rank - 1 /* Ranks.ONE */;
+    let fileOffset = file - 1 /* Files.A */;
     return NUM_COLUMNS * (rankOffset + 2) + fileOffset + 1;
 }
 function getSquare(rank, file) {
@@ -28,14 +28,11 @@ function getColorToMove() {
 function initialize() {
     let board = new Array(NUM_ROWS * NUM_COLUMNS);
     board.fill(OFF_BOARD_SQUARE);
-    for (let rank = Ranks.ONE; rank <= Ranks.EIGHT; ++rank) {
-        for (let file = Files.A; file <= Files.H; ++file) {
+    for (let rank = 1 /* Ranks.ONE */; rank <= 8 /* Ranks.EIGHT */; ++rank) {
+        for (let file = 1 /* Files.A */; file <= 8 /* Files.H */; ++file) {
             board[getIndex(rank, file)] = {
                 isOnBoard: true,
-                piece: {
-                    type: PieceType.PAWN,
-                    color: Colors.WHITE
-                },
+                piece: null,
                 rank: rank,
                 file: file
             };
@@ -43,9 +40,88 @@ function initialize() {
     }
     backEnd = {
         board: board,
-        colorToMove: Colors.WHITE
+        colorToMove: 0 /* Colors.WHITE */
     };
-    getSquare(Ranks.ONE, Files.A).piece = null;
+    let numFiles = 8;
+    // Ensure bishops are on opposite colors
+    let bishopFile1 = 2 * Math.floor(numFiles / 2 * Math.random()) + 1;
+    let bishopFile2 = 2 * Math.floor(numFiles / 2 * Math.random()) + 2;
+    // Only consider files not in bishopFile1 or bishopFile2
+    let fileOptions = [];
+    for (let file = 1 /* Files.A */; file <= 8 /* Files.H */; ++file) {
+        if (file !== bishopFile1 && file !== bishopFile2) {
+            fileOptions.push(file);
+        }
+    }
+    // Shuffle with Fisher-Yates algorithm
+    for (let i = 0; i < fileOptions.length - 1; ++i) {
+        let swapIndex = Math.floor(Math.random() * (fileOptions.length - i)) + i;
+        let temp = fileOptions[i];
+        fileOptions[i] = fileOptions[swapIndex];
+        fileOptions[swapIndex] = temp;
+    }
+    let [knightFile1, knightFile2, queenFile, rookFile1, rookFile2, kingFile] = fileOptions;
+    // Ensure king is in between rooks
+    if (kingFile < rookFile1 === rookFile1 < rookFile2) {
+        let temp = kingFile;
+        kingFile = rookFile1;
+        rookFile1 = temp;
+    }
+    else if (kingFile < rookFile2 === rookFile2 < rookFile1) {
+        let temp = kingFile;
+        kingFile = rookFile2;
+        rookFile2 = temp;
+    }
+    getSquare(1 /* Ranks.ONE */, knightFile1).piece = {
+        type: 1 /* PieceTypes.KNIGHT */,
+        color: 0 /* Colors.WHITE */
+    };
+    getSquare(1 /* Ranks.ONE */, knightFile2).piece = {
+        type: 1 /* PieceTypes.KNIGHT */,
+        color: 0 /* Colors.WHITE */
+    };
+    getSquare(1 /* Ranks.ONE */, bishopFile1).piece = {
+        type: 2 /* PieceTypes.BISHOP */,
+        color: 0 /* Colors.WHITE */
+    };
+    getSquare(1 /* Ranks.ONE */, bishopFile2).piece = {
+        type: 2 /* PieceTypes.BISHOP */,
+        color: 0 /* Colors.WHITE */
+    };
+    getSquare(1 /* Ranks.ONE */, rookFile1).piece = {
+        type: 3 /* PieceTypes.ROOK */,
+        color: 0 /* Colors.WHITE */
+    };
+    getSquare(1 /* Ranks.ONE */, rookFile2).piece = {
+        type: 3 /* PieceTypes.ROOK */,
+        color: 0 /* Colors.WHITE */
+    };
+    getSquare(1 /* Ranks.ONE */, queenFile).piece = {
+        type: 4 /* PieceTypes.QUEEN */,
+        color: 0 /* Colors.WHITE */
+    };
+    getSquare(1 /* Ranks.ONE */, kingFile).piece = {
+        type: 5 /* PieceTypes.KING */,
+        color: 0 /* Colors.WHITE */
+    };
+    for (let file = 1 /* Files.A */; file <= 8 /* Files.H */; ++file) {
+        getSquare(2 /* Ranks.TWO */, file).piece = {
+            type: 0 /* PieceTypes.PAWN */,
+            color: 0 /* Colors.WHITE */
+        };
+        getSquare(7 /* Ranks.SEVEN */, file).piece = {
+            type: 0 /* PieceTypes.PAWN */,
+            color: 1 /* Colors.BLACK */
+        };
+        let rank1Piece = getSquare(1 /* Ranks.ONE */, file).piece;
+        if (rank1Piece === null) {
+            throw new Error("Rank1 Piece not yet initialized");
+        }
+        getSquare(8 /* Ranks.EIGHT */, file).piece = {
+            type: rank1Piece.type,
+            color: 1 /* Colors.BLACK */
+        };
+    }
 }
 // class BackEnd{
 //     #numRows = 12;

@@ -1,5 +1,3 @@
-// import {Piece, King, Queen, Rook, Bishop, Knight, Pawn} from "./pieces/piece-module.js";
-import { Files, Ranks, Colors, PieceType } from "./utils.js";
 import { getSquare, getColorToMove } from "./back-end.js";
 let frontEnd = null;
 function getFrontEnd() {
@@ -10,25 +8,25 @@ function getFrontEnd() {
 }
 function colorToString(color) {
     switch (color) {
-        case Colors.WHITE:
+        case 0 /* Colors.WHITE */:
             return "white";
-        case Colors.BLACK:
+        case 1 /* Colors.BLACK */:
             return "black";
     }
 }
 function pieceTypeToString(pieceType) {
     switch (pieceType) {
-        case PieceType.PAWN:
+        case 0 /* PieceTypes.PAWN */:
             return "pawn";
-        case PieceType.KNIGHT:
+        case 1 /* PieceTypes.KNIGHT */:
             return "knight";
-        case PieceType.BISHOP:
+        case 2 /* PieceTypes.BISHOP */:
             return "bishop";
-        case PieceType.ROOK:
+        case 3 /* PieceTypes.ROOK */:
             return "rook";
-        case PieceType.QUEEN:
+        case 4 /* PieceTypes.QUEEN */:
             return "queen";
-        case PieceType.KING:
+        case 5 /* PieceTypes.KING */:
             return "king";
     }
 }
@@ -47,8 +45,8 @@ function initializeHTML() {
         throw new Error("Board element not found in DOM");
     }
     let isLight = true;
-    for (let rank = Ranks.EIGHT; rank >= Ranks.ONE; --rank) {
-        for (let file = Files.A; file <= Files.H; ++file) {
+    for (let rank = 8 /* Ranks.EIGHT */; rank >= 1 /* Ranks.ONE */; --rank) {
+        for (let file = 1 /* Files.A */; file <= 8 /* Files.H */; ++file) {
             let frontEndSquare = document.createElement("div");
             frontEndSquare.classList.add("square");
             frontEndSquare.classList.add(isLight ? "light" : "dark");
@@ -66,10 +64,10 @@ function initializeHTML() {
         throw new Error("rowLabelContainer element not found in DOM");
     }
     let charCode1 = "1".charCodeAt(0);
-    for (let rank = Ranks.ONE; rank <= Ranks.EIGHT; ++rank) {
+    for (let rank = 1 /* Ranks.ONE */; rank <= 8 /* Ranks.EIGHT */; ++rank) {
         let label = document.createElement("div");
         label.classList.add("label");
-        label.innerHTML = String.fromCharCode(charCode1 + Ranks.EIGHT - rank);
+        label.innerHTML = String.fromCharCode(charCode1 + 8 /* Ranks.EIGHT */ - rank);
         rowLabelContainer.appendChild(label);
     }
     let columnLabelContainer = document.getElementById("column-label-container");
@@ -77,7 +75,7 @@ function initializeHTML() {
         throw new Error("columnLabelContainer element not found in DOM");
     }
     let charCodea = "a".charCodeAt(0);
-    for (let file = Files.A; file <= Files.H; ++file) {
+    for (let file = 1 /* Files.A */; file <= 8 /* Files.H */; ++file) {
         let label = document.createElement("div");
         label.classList.add("label");
         label.innerHTML = String.fromCharCode(charCodea + file - 1);
