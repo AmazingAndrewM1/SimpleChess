@@ -7,7 +7,10 @@ interface FrontEnd{
     turnContainer: HTMLElement,
     rowLabelContainer: HTMLElement,
     columnLabelContainer: HTMLElement,
-    isWhiteOnBottom: boolean
+    isWhiteOnBottom: boolean,
+    isMouseDown: boolean,
+    isDragging: boolean,
+    hasMadeMove: boolean
 }
 
 let frontEnd: FrontEnd | null = null;
@@ -116,9 +119,63 @@ function initializeHTML(){
         turnContainer: turnContainer,
         rowLabelContainer: rowLabelContainer,
         columnLabelContainer: columnLabelContainer,
-        isWhiteOnBottom: true
+        isWhiteOnBottom: true,
+        isMouseDown: false,
+        isDragging: false,
+        hasMadeMove: true
     }
+
+    /*  Explanation of how to mimic a MouseDrag Event with mousedown, mousemove, and mouseup EventListeners:
+        https://techozu.com/detect-mouse-drag-javascript/#:~:text=The%20idea%20is%20very%20straightforward%3A%201%20Create%20a,was%20dragged%3B%20if%20false%2C%20it%20was%20just%20clicked.
+    */
+    document.addEventListener("mousedown", (event) => handleMouseDown(event));
+    document.addEventListener("mousemove", (event) => handleMouseMove(event));
+    document.addEventListener("mouseup", (event) => handleMouseUp(event));
 }
+
+function handleMouseDown(event: MouseEvent){
+    event.preventDefault();
+
+    let frontEnd = getFrontEnd();
+    if (.hasMadeMove === false){
+        event.stopPropagation();
+        this.tryMove(event);
+        this.hasMadeMove = true;
+        return;
+    }
+    if (event.target.classList.contains("sprite") === false){
+        return;
+    }
+    let rect = this.board.getBoundingClientRect();
+    let offsetX = event.clientX - rect.left;
+    let offsetY = event.clientY - rect.top;
+    let row = clamp(0, Math.floor(offsetY * this.numRows / rect.height), this.numRows - 1);
+    let column = clamp(0, Math.floor(offsetX * this.numColumns / rect.width), this.numColumns - 1);
+    this.selected = {
+        rank: this.getRank(row),
+        file: this.getFile(column),
+        square: event.target.parentElement,
+        piece: event.target,
+        clientX: event.clientX,
+        clientY: event.clientY
+    };
+    this.selected.square.classList.add("highlighted");
+    this.selected.piece.style.transform = "translate(0px, 0px)";
+    this.selected.piece.classList.add("selected");
+    BACK_END.setFromSquare(this.selected.rank, this.selected.file);
+    this.showMoves(BACK_END.getMoves());
+    this.isMouseDown = true;
+    this.isDragging = false;
+    this.hasMadeMove = false;
+}
+
+function handleMouseMove(event: MouseEvent){
+
+}
+function handleMouseUp(event: MouseEvent){
+
+}
+
 // class FrontEnd{
 //     constructor(){
 //         this.board = document.getElementById("board");
