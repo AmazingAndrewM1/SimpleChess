@@ -25,6 +25,12 @@ function getColorToMove() {
     let backEnd = getBackEnd();
     return backEnd.colorToMove;
 }
+function getPiece(rank, file) {
+    return getSquare(rank, file).piece;
+}
+function isPiecePresent(rank, file) {
+    return getPiece(rank, file) !== null;
+}
 function initialize() {
     let board = new Array(NUM_ROWS * NUM_COLUMNS);
     board.fill(OFF_BOARD_SQUARE);
@@ -447,4 +453,4 @@ function initialize() {
 //         }
 //     }
 // }
-export { initialize, getSquare, getColorToMove };
+export { initialize, getSquare, getColorToMove, getPiece, isPiecePresent };

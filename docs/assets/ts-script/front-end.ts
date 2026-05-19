@@ -1,7 +1,9 @@
 // import {Piece, King, Queen, Rook, Bishop, Knight, Pawn} from "./pieces/piece-module.js";
 import { Files, Ranks, Colors, Piece, PieceTypes } from "./utils";
-import { getSquare, getColorToMove } from "./back-end";
+import { getSquare, getColorToMove, getPiece, isPiecePresent } from "./back-end";
 
+const NUM_RANKS = 8;
+const NUM_FILES = 8;
 interface FrontEnd{
     board: HTMLElement,
     turnContainer: HTMLElement,
@@ -14,6 +16,24 @@ interface FrontEnd{
 }
 
 let frontEnd: FrontEnd | null = null;
+
+/** Utility function that returns 
+    1) val if min <= val <= max
+    2) min if val < min
+    3) max if min > max
+    @param {number} val - The minimum value this function returns.
+    @param {number} min - The preferred value this function returns.
+    @param {number} max - The maximum value this function returns.
+*/
+function clamp(val: number, min: number, max: number): number{
+    if (val < min){
+        return min;
+    }
+    if (val > max){
+        return max;
+    }
+    return val;
+}
 
 function getFrontEnd(){
     if (frontEnd === null){
@@ -71,9 +91,9 @@ function initializeHTML(){
             frontEndSquare.classList.add("square");
             frontEndSquare.classList.add(isLight ? "light" : "dark");
 
-            let backEndSquare = getSquare(rank, file);
-            if (backEndSquare.piece !== null){
-                frontEndSquare.appendChild(getPieceElement(backEndSquare.piece));
+            let piece = getPiece(rank, file);
+            if (piece !== null){
+                frontEndSquare.appendChild(getPieceElement(piece));
             }
             board.appendChild(frontEndSquare);
             isLight = !isLight;
@@ -133,41 +153,80 @@ function initializeHTML(){
     document.addEventListener("mouseup", (event) => handleMouseUp(event));
 }
 
+function getRank(row: number): Ranks{
+    let rank = row;
+    if (getFrontEnd().isWhiteOnBottom){
+        rank = NUM_RANKS - rank - 1;
+    }
+    return rank + Ranks.ONE;
+}
+
+function getFile(column: number): Files{
+    return column + Files.A;
+}
+
+function isClickInsideBoard(target: Element): boolean{
+    let board = getFrontEnd().board;
+    let node: HTMLElement | null = target as HTMLElement;
+    while (node !== null && node !== board){
+        node = node.parentElement;
+    }
+    return node === board;
+}
+
 function handleMouseDown(event: MouseEvent){
     event.preventDefault();
 
-    let frontEnd = getFrontEnd();
-    if (.hasMadeMove === false){
-        event.stopPropagation();
-        this.tryMove(event);
-        this.hasMadeMove = true;
+    const target = event.target;
+    if (target === null || !(target instanceof Element) || !isClickInsideBoard(target)){
         return;
     }
-    if (event.target.classList.contains("sprite") === false){
-        return;
-    }
-    let rect = this.board.getBoundingClientRect();
+
+    // let frontEnd = getFrontEnd();
+    // if (frontEnd.hasMadeMove === false){
+    //     event.stopPropagation();
+    //     this.tryMove(event);
+    //     this.hasMadeMove = true;
+    //     return;
+    // }
+
+    let board = getFrontEnd().board;
+    let rect = board.getBoundingClientRect();
     let offsetX = event.clientX - rect.left;
     let offsetY = event.clientY - rect.top;
-    let row = clamp(0, Math.floor(offsetY * this.numRows / rect.height), this.numRows - 1);
-    let column = clamp(0, Math.floor(offsetX * this.numColumns / rect.width), this.numColumns - 1);
-    this.selected = {
-        rank: this.getRank(row),
-        file: this.getFile(column),
-        square: event.target.parentElement,
-        piece: event.target,
-        clientX: event.clientX,
-        clientY: event.clientY
-    };
-    this.selected.square.classList.add("highlighted");
-    this.selected.piece.style.transform = "translate(0px, 0px)";
-    this.selected.piece.classList.add("selected");
-    BACK_END.setFromSquare(this.selected.rank, this.selected.file);
-    this.showMoves(BACK_END.getMoves());
-    this.isMouseDown = true;
-    this.isDragging = false;
-    this.hasMadeMove = false;
+    let row = clamp(Math.floor(offsetY * NUM_RANKS / rect.height), 0, NUM_RANKS - 1);
+    let column = clamp(Math.floor(offsetX * NUM_FILES / rect.width), 0, NUM_FILES - 1);
+    let rank = getRank(row);
+    let file = getFile(column);
+
+    if (!isPiecePresent(rank, file)){
+        return;
+    }
+
+    // let rect = this.board.getBoundingClientRect();
+    // let offsetX = event.clientX - rect.left;
+    // let offsetY = event.clientY - rect.top;
+    // let row = clamp(0, Math.floor(offsetY * this.numRows / rect.height), this.numRows - 1);
+    // let column = clamp(0, Math.floor(offsetX * this.numColumns / rect.width), this.numColumns - 1);
+    // this.selected = {
+    //     rank: this.getRank(row),
+    //     file: this.getFile(column),
+    //     square: event.target.parentElement,
+    //     piece: event.target,
+    //     clientX: event.clientX,
+    //     clientY: event.clientY
+    // };
+    // this.selected.square.classList.add("highlighted");
+    // this.selected.piece.style.transform = "translate(0px, 0px)";
+    // this.selected.piece.classList.add("selected");
+    // BACK_END.setFromSquare(this.selected.rank, this.selected.file);
+    // this.showMoves(BACK_END.getMoves());
+    // this.isMouseDown = true;
+    // this.isDragging = false;
+    // this.hasMadeMove = false;
 }
+
+
 
 function handleMouseMove(event: MouseEvent){
 

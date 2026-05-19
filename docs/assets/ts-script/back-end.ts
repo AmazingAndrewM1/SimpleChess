@@ -37,6 +37,14 @@ function getColorToMove(){
     return backEnd.colorToMove;
 }
 
+function getPiece(rank: Ranks, file: Files){
+    return getSquare(rank, file).piece;
+}
+
+function isPiecePresent(rank: Ranks, file: Files){
+    return getPiece(rank, file) !== null;
+}
+
 function initialize(){
     let board = new Array<Square>(NUM_ROWS * NUM_COLUMNS);
     
@@ -531,4 +539,4 @@ function initialize(){
 //     }
 // }
 
-export {initialize, getSquare, getColorToMove}
+export {initialize, getSquare, getColorToMove, getPiece, isPiecePresent}

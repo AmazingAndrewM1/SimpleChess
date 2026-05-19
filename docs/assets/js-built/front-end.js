@@ -1,5 +1,24 @@
-import { getSquare, getColorToMove } from "./back-end.js";
+import { getColorToMove, getPiece, isPiecePresent } from "./back-end.js";
+const NUM_RANKS = 8;
+const NUM_FILES = 8;
 let frontEnd = null;
+/** Utility function that returns
+    1) val if min <= val <= max
+    2) min if val < min
+    3) max if min > max
+    @param {number} val - The minimum value this function returns.
+    @param {number} min - The preferred value this function returns.
+    @param {number} max - The maximum value this function returns.
+*/
+function clamp(val, min, max) {
+    if (val < min) {
+        return min;
+    }
+    if (val > max) {
+        return max;
+    }
+    return val;
+}
 function getFrontEnd() {
     if (frontEnd === null) {
         throw new Error("frontEnd not initialized");
@@ -50,9 +69,9 @@ function initializeHTML() {
             let frontEndSquare = document.createElement("div");
             frontEndSquare.classList.add("square");
             frontEndSquare.classList.add(isLight ? "light" : "dark");
-            let backEndSquare = getSquare(rank, file);
-            if (backEndSquare.piece !== null) {
-                frontEndSquare.appendChild(getPieceElement(backEndSquare.piece));
+            let piece = getPiece(rank, file);
+            if (piece !== null) {
+                frontEndSquare.appendChild(getPieceElement(piece));
             }
             board.appendChild(frontEndSquare);
             isLight = !isLight;
@@ -91,8 +110,85 @@ function initializeHTML() {
         turnContainer: turnContainer,
         rowLabelContainer: rowLabelContainer,
         columnLabelContainer: columnLabelContainer,
-        isWhiteOnBottom: true
+        isWhiteOnBottom: true,
+        isMouseDown: false,
+        isDragging: false,
+        hasMadeMove: true
     };
+    /*  Explanation of how to mimic a MouseDrag Event with mousedown, mousemove, and mouseup EventListeners:
+        https://techozu.com/detect-mouse-drag-javascript/#:~:text=The%20idea%20is%20very%20straightforward%3A%201%20Create%20a,was%20dragged%3B%20if%20false%2C%20it%20was%20just%20clicked.
+    */
+    document.addEventListener("mousedown", (event) => handleMouseDown(event));
+    document.addEventListener("mousemove", (event) => handleMouseMove(event));
+    document.addEventListener("mouseup", (event) => handleMouseUp(event));
+}
+function getRank(row) {
+    let rank = row;
+    if (getFrontEnd().isWhiteOnBottom) {
+        rank = NUM_RANKS - rank - 1;
+    }
+    return rank + 1 /* Ranks.ONE */;
+}
+function getFile(column) {
+    return column + 1 /* Files.A */;
+}
+function isClickInsideBoard(target) {
+    let board = getFrontEnd().board;
+    let node = target;
+    while (node !== null && node !== board) {
+        node = node.parentElement;
+    }
+    return node === board;
+}
+function handleMouseDown(event) {
+    event.preventDefault();
+    const target = event.target;
+    if (target === null || !(target instanceof Element) || !isClickInsideBoard(target)) {
+        return;
+    }
+    // let frontEnd = getFrontEnd();
+    // if (frontEnd.hasMadeMove === false){
+    //     event.stopPropagation();
+    //     this.tryMove(event);
+    //     this.hasMadeMove = true;
+    //     return;
+    // }
+    let board = getFrontEnd().board;
+    let rect = board.getBoundingClientRect();
+    let offsetX = event.clientX - rect.left;
+    let offsetY = event.clientY - rect.top;
+    let row = clamp(Math.floor(offsetY * NUM_RANKS / rect.height), 0, NUM_RANKS - 1);
+    let column = clamp(Math.floor(offsetX * NUM_FILES / rect.width), 0, NUM_FILES - 1);
+    let rank = getRank(row);
+    let file = getFile(column);
+    if (!isPiecePresent(rank, file)) {
+        return;
+    }
+    // let rect = this.board.getBoundingClientRect();
+    // let offsetX = event.clientX - rect.left;
+    // let offsetY = event.clientY - rect.top;
+    // let row = clamp(0, Math.floor(offsetY * this.numRows / rect.height), this.numRows - 1);
+    // let column = clamp(0, Math.floor(offsetX * this.numColumns / rect.width), this.numColumns - 1);
+    // this.selected = {
+    //     rank: this.getRank(row),
+    //     file: this.getFile(column),
+    //     square: event.target.parentElement,
+    //     piece: event.target,
+    //     clientX: event.clientX,
+    //     clientY: event.clientY
+    // };
+    // this.selected.square.classList.add("highlighted");
+    // this.selected.piece.style.transform = "translate(0px, 0px)";
+    // this.selected.piece.classList.add("selected");
+    // BACK_END.setFromSquare(this.selected.rank, this.selected.file);
+    // this.showMoves(BACK_END.getMoves());
+    // this.isMouseDown = true;
+    // this.isDragging = false;
+    // this.hasMadeMove = false;
+}
+function handleMouseMove(event) {
+}
+function handleMouseUp(event) {
 }
 // class FrontEnd{
 //     constructor(){
