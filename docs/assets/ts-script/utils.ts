@@ -38,7 +38,8 @@ const enum PieceTypes{
 
 interface Piece{
     type: PieceTypes,
-    color: Colors
+    color: Colors,
+    hasMoved: boolean
 }
 
 interface OnBoardSquare{

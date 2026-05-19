@@ -31,6 +31,122 @@ function getPiece(rank, file) {
 function isPiecePresent(rank, file) {
     return getPiece(rank, file) !== null;
 }
+function getTransposed(square, delta) {
+    let newRank = square.rank + delta.rank;
+    let newFile = square.file + delta.file;
+    let resultSquare = getBackEnd().board[getIndex(newRank, newFile)];
+    console.log(square, delta, resultSquare);
+    return resultSquare;
+}
+function getPawnMoves(fromSquare) {
+    let deltaRank;
+    switch (fromSquare.piece.color) {
+        case 0 /* Colors.WHITE */:
+            deltaRank = 1;
+            break;
+        case 1 /* Colors.BLACK */:
+            deltaRank = -1;
+            break;
+    }
+    let forwardDirection = {
+        rank: deltaRank,
+        file: 0
+    };
+    let moves = [];
+    let forwardSquare = getTransposed(fromSquare, forwardDirection); /* Guaranteed to be OnBoardSquare in this case */
+    if (forwardSquare.piece === null) {
+        moves.push(forwardSquare);
+    }
+    let forward2Square = getTransposed(forwardSquare, forwardDirection);
+    if (fromSquare.piece.hasMoved === false && forwardSquare.piece === null && forward2Square.piece === null) {
+        moves.push(forward2Square);
+    }
+    for (let deltaFile of [-1, +1]) {
+        let captureDirection = {
+            rank: deltaRank,
+            file: deltaFile
+        };
+        let captureSquare = getTransposed(fromSquare, captureDirection);
+        if (captureSquare.isOnBoard && captureSquare.piece !== null && captureSquare.piece.color !== fromSquare.piece.color) {
+            moves.push(captureSquare);
+        }
+        else if (captureSquare === getBackEnd().enPassantSquare) {
+            moves.push(captureSquare);
+        }
+    }
+    return moves;
+}
+function getKnightMoves(fromSquare) {
+    let knightDeltas = [
+        [1, 2],
+        [2, 1],
+        [2, -1],
+        [1, -2],
+        [-1, -2],
+        [-2, -1],
+        [-2, 1],
+        [-1, 2]
+    ];
+    let moves = [];
+    for (const [fileDelta, rankDelta] of knightDeltas) {
+        let direction = {
+            rank: rankDelta,
+            file: fileDelta
+        };
+        let destinationSquare = getTransposed(fromSquare, direction);
+        if (destinationSquare.isOnBoard && (destinationSquare.piece === null || destinationSquare.piece.color !== fromSquare.piece.color)) {
+            moves.push(destinationSquare);
+        }
+    }
+    return moves;
+}
+function getBishopMoves(fromSquare) {
+    let bishopDeltas = [
+        [1, 1],
+        [1, -1],
+        [-1, -1],
+        [-1, 1]
+    ];
+    let moves = [];
+    for (const [fileDelta, rankDelta] of bishopDeltas) {
+        let direction = {
+            rank: rankDelta,
+            file: fileDelta
+        };
+        let toSquare = getTransposed(fromSquare, direction);
+        while (toSquare.isOnBoard && toSquare.piece === null) {
+            moves.push(toSquare);
+            toSquare = getTransposed(toSquare, direction);
+        }
+        if (toSquare.isOnBoard && toSquare.piece.color !== fromSquare.piece.color) {
+            moves.push(toSquare);
+        }
+    }
+    return moves;
+}
+function getLegalMoves(rank, file) {
+    let square = getSquare(rank, file);
+    if (square.piece === null || square.piece.color !== getColorToMove()) {
+        return [];
+    }
+    switch (square.piece.type) {
+        case 0 /* PieceTypes.PAWN */:
+            return getPawnMoves(square);
+        case 1 /* PieceTypes.KNIGHT */:
+            return getKnightMoves(square);
+        case 2 /* PieceTypes.BISHOP */:
+            return getBishopMoves(square);
+        default:
+            return [];
+    }
+}
+function createPiece(type, color) {
+    return {
+        type: type,
+        color: color,
+        hasMoved: false
+    };
+}
 function initialize() {
     let board = new Array(NUM_ROWS * NUM_COLUMNS);
     board.fill(OFF_BOARD_SQUARE);
@@ -46,7 +162,8 @@ function initialize() {
     }
     backEnd = {
         board: board,
-        colorToMove: 0 /* Colors.WHITE */
+        colorToMove: 0 /* Colors.WHITE */,
+        enPassantSquare: null
     };
     let numFiles = 8;
     // Ensure bishops are on opposite colors
@@ -78,55 +195,22 @@ function initialize() {
         kingFile = rookFile2;
         rookFile2 = temp;
     }
-    getSquare(1 /* Ranks.ONE */, knightFile1).piece = {
-        type: 1 /* PieceTypes.KNIGHT */,
-        color: 0 /* Colors.WHITE */
-    };
-    getSquare(1 /* Ranks.ONE */, knightFile2).piece = {
-        type: 1 /* PieceTypes.KNIGHT */,
-        color: 0 /* Colors.WHITE */
-    };
-    getSquare(1 /* Ranks.ONE */, bishopFile1).piece = {
-        type: 2 /* PieceTypes.BISHOP */,
-        color: 0 /* Colors.WHITE */
-    };
-    getSquare(1 /* Ranks.ONE */, bishopFile2).piece = {
-        type: 2 /* PieceTypes.BISHOP */,
-        color: 0 /* Colors.WHITE */
-    };
-    getSquare(1 /* Ranks.ONE */, rookFile1).piece = {
-        type: 3 /* PieceTypes.ROOK */,
-        color: 0 /* Colors.WHITE */
-    };
-    getSquare(1 /* Ranks.ONE */, rookFile2).piece = {
-        type: 3 /* PieceTypes.ROOK */,
-        color: 0 /* Colors.WHITE */
-    };
-    getSquare(1 /* Ranks.ONE */, queenFile).piece = {
-        type: 4 /* PieceTypes.QUEEN */,
-        color: 0 /* Colors.WHITE */
-    };
-    getSquare(1 /* Ranks.ONE */, kingFile).piece = {
-        type: 5 /* PieceTypes.KING */,
-        color: 0 /* Colors.WHITE */
-    };
+    getSquare(1 /* Ranks.ONE */, knightFile1).piece = createPiece(1 /* PieceTypes.KNIGHT */, 0 /* Colors.WHITE */);
+    getSquare(1 /* Ranks.ONE */, knightFile2).piece = createPiece(1 /* PieceTypes.KNIGHT */, 0 /* Colors.WHITE */);
+    getSquare(1 /* Ranks.ONE */, bishopFile1).piece = createPiece(2 /* PieceTypes.BISHOP */, 0 /* Colors.WHITE */);
+    getSquare(1 /* Ranks.ONE */, bishopFile2).piece = createPiece(2 /* PieceTypes.BISHOP */, 0 /* Colors.WHITE */);
+    getSquare(1 /* Ranks.ONE */, rookFile1).piece = createPiece(3 /* PieceTypes.ROOK */, 0 /* Colors.WHITE */);
+    getSquare(1 /* Ranks.ONE */, rookFile2).piece = createPiece(3 /* PieceTypes.ROOK */, 0 /* Colors.WHITE */);
+    getSquare(1 /* Ranks.ONE */, queenFile).piece = createPiece(4 /* PieceTypes.QUEEN */, 0 /* Colors.WHITE */);
+    getSquare(1 /* Ranks.ONE */, kingFile).piece = createPiece(5 /* PieceTypes.KING */, 0 /* Colors.WHITE */);
     for (let file = 1 /* Files.A */; file <= 8 /* Files.H */; ++file) {
-        getSquare(2 /* Ranks.TWO */, file).piece = {
-            type: 0 /* PieceTypes.PAWN */,
-            color: 0 /* Colors.WHITE */
-        };
-        getSquare(7 /* Ranks.SEVEN */, file).piece = {
-            type: 0 /* PieceTypes.PAWN */,
-            color: 1 /* Colors.BLACK */
-        };
+        getSquare(2 /* Ranks.TWO */, file).piece = createPiece(0 /* PieceTypes.PAWN */, 0 /* Colors.WHITE */);
+        getSquare(7 /* Ranks.SEVEN */, file).piece = createPiece(0 /* PieceTypes.PAWN */, 1 /* Colors.BLACK */);
         let rank1Piece = getSquare(1 /* Ranks.ONE */, file).piece;
         if (rank1Piece === null) {
             throw new Error("Rank1 Piece not yet initialized");
         }
-        getSquare(8 /* Ranks.EIGHT */, file).piece = {
-            type: rank1Piece.type,
-            color: 1 /* Colors.BLACK */
-        };
+        getSquare(8 /* Ranks.EIGHT */, file).piece = createPiece(rank1Piece.type, 1 /* Colors.BLACK */);
     }
 }
 // class BackEnd{
@@ -453,4 +537,4 @@ function initialize() {
 //         }
 //     }
 // }
-export { initialize, getSquare, getColorToMove, getPiece, isPiecePresent };
+export { initialize, getSquare, getColorToMove, getPiece, isPiecePresent, getLegalMoves };

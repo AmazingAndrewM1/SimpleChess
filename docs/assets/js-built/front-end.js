@@ -1,4 +1,4 @@
-import { getColorToMove, getPiece, isPiecePresent } from "./back-end.js";
+import { getColorToMove, getPiece, isPiecePresent, getLegalMoves } from "./back-end.js";
 const NUM_RANKS = 8;
 const NUM_FILES = 8;
 let frontEnd = null;
@@ -164,6 +164,8 @@ function handleMouseDown(event) {
     if (!isPiecePresent(rank, file)) {
         return;
     }
+    let moves = getLegalMoves(rank, file);
+    console.log(moves);
     // let rect = this.board.getBoundingClientRect();
     // let offsetX = event.clientX - rect.left;
     // let offsetY = event.clientY - rect.top;
