@@ -1,6 +1,6 @@
 // import {Piece, King, Queen, Rook, Bishop, Knight, Pawn} from "./pieces/piece-module.js";
 import { Files, Ranks, Colors, Piece, PieceTypes } from "./utils";
-import { getSquare, getColorToMove, getPiece, isPiecePresent, getLegalMoves } from "./back-end";
+import { getSquare, getColorToMove, getPiece, isPiecePresent, getPseudoLegalMoves } from "./back-end";
 
 const NUM_RANKS = 8;
 const NUM_FILES = 8;
@@ -203,7 +203,7 @@ function handleMouseDown(event: MouseEvent){
         return;
     }
 
-    let moves = getLegalMoves(rank, file);
+    let moves = getPseudoLegalMoves(rank, file);
     console.log(moves);
 
     // let rect = this.board.getBoundingClientRect();
