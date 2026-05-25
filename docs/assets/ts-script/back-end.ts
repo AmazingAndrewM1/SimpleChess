@@ -1,4 +1,4 @@
-import {Ranks, Files, PieceTypes, Colors, Piece, OnBoardSquare, OFF_BOARD_SQUARE, Square} from "./utils";
+import {Ranks, Files, PieceTypes, Colors, Piece, OnBoardSquare, OFF_BOARD_SQUARE, Square, createPiece} from "./utils";
 import {BoardDelta, PAWN_WHITE_CAPTURE_DELTAS, PAWN_BLACK_CAPTURE_DELTAS, PAWN_WHITE_FORWARD_DELTA, PAWN_BLACK_FORWARD_DELTA,
     KNIGHT_DELTAS, BISHOP_DELTAS, ROOK_DELTAS, QUEEN_DELTAS, KING_DELTAS
 } from "./piece-deltas";
@@ -13,13 +13,30 @@ interface BackEnd{
 
 const NUM_ROWS = 12;
 const NUM_COLUMNS = 10;
-let backEnd: BackEnd | null = null;
+let backEnd: BackEnd = makeEmptyBoard();
 
-function getBackEnd(){
-    if (backEnd === null){
-        throw new Error("backEnd not initialized");
+function makeEmptyBoard(): BackEnd{
+    let board = new Array<Square>(NUM_ROWS * NUM_COLUMNS);
+    
+    board.fill(OFF_BOARD_SQUARE);
+    for (let rank = Ranks.ONE; rank <= Ranks.EIGHT; ++rank){
+        for (let file = Files.A; file <= Files.H; ++file){
+            board[getIndex(rank, file)] = {
+                isOnBoard: true,
+                piece: null,
+                rank: rank,
+                file: file
+            }
+        }
     }
-    return backEnd;
+
+    return {
+        board: board,
+        colorToMove: Colors.WHITE,
+        enPassantSquare: null,
+        kingsideRookFile: Files.NONE,
+        queensideRookFile: Files.NONE
+    };
 }
 
 function getIndex(rank: number, file: number){
@@ -30,7 +47,6 @@ function getIndex(rank: number, file: number){
 }
 
 function getSquare(rank: Ranks, file: Files){
-    let backEnd = getBackEnd();
     let square = backEnd.board[getIndex(rank, file)]
     if (!square.isOnBoard){
         throw new Error("Square is not on board");
@@ -39,7 +55,6 @@ function getSquare(rank: Ranks, file: Files){
 }
 
 function getColorToMove(){
-    let backEnd = getBackEnd();
     return backEnd.colorToMove;
 }
 
@@ -54,7 +69,7 @@ function isPiecePresent(rank: Ranks, file: Files){
 function getTransposed(square: OnBoardSquare, delta: BoardDelta): Square{
     let newRank = square.rank + delta.rank;
     let newFile = square.file + delta.file;
-    let resultSquare = getBackEnd().board[getIndex(newRank, newFile)];
+    let resultSquare = backEnd.board[getIndex(newRank, newFile)];
     return resultSquare;
 }
 
@@ -105,7 +120,7 @@ function getPawnMoves(fromSquare: OnBoardSquare){
         if (captureSquare.isOnBoard && captureSquare.piece !== null && captureSquare.piece.color !== fromSquare.piece!.color){
             moves.push(captureSquare);
         }
-        else if (captureSquare === getBackEnd().enPassantSquare){
+        else if (captureSquare === backEnd.enPassantSquare){
             moves.push(captureSquare);
         }
     }
@@ -114,7 +129,7 @@ function getPawnMoves(fromSquare: OnBoardSquare){
 }
 
 function canCastle(kingSquare: OnBoardSquare, rookFile: Files): boolean{
-    if (kingSquare.piece!.hasMoved){
+    if (kingSquare.piece!.hasMoved || rookFile === Files.NONE){
         return false;
     }
 
@@ -154,8 +169,6 @@ function canCastle(kingSquare: OnBoardSquare, rookFile: Files): boolean{
 
 function getKingMoves(fromSquare: OnBoardSquare){
     let moves = getLeapingMoves(fromSquare, KING_DELTAS);
-
-    let backEnd = getBackEnd();
     
     let kingsideRookFile = backEnd.kingsideRookFile;
     if (canCastle(fromSquare, kingsideRookFile)){
@@ -194,29 +207,7 @@ function getPseudoLegalMoves(rank: Ranks, file: Files): Array<OnBoardSquare>{
     }
 }
 
-function createPiece(type: PieceTypes, color: Colors): Piece{
-    return {
-        type: type,
-        color: color,
-        hasMoved: false
-    }
-}
-
 function initialize(){
-    let board = new Array<Square>(NUM_ROWS * NUM_COLUMNS);
-    
-    board.fill(OFF_BOARD_SQUARE);
-    for (let rank = Ranks.ONE; rank <= Ranks.EIGHT; ++rank){
-        for (let file = Files.A; file <= Files.H; ++file){
-            board[getIndex(rank, file)] = {
-                isOnBoard: true,
-                piece: null,
-                rank: rank,
-                file: file
-            }
-        }
-    }
-
     const NUM_FILES = 8;
 
     // Ensure bishops are on opposite colors
@@ -256,14 +247,6 @@ function initialize(){
     let kingsideRookFile = kingFile < rookFile1 ? rookFile1 : rookFile2;
     let queensideRookFile = rookFile1 < kingFile ? rookFile1 : rookFile2;
 
-    backEnd = {
-        board: board,
-        colorToMove: Colors.WHITE,
-        enPassantSquare: null,
-        kingsideRookFile,
-        queensideRookFile
-    }
-
     getSquare(Ranks.ONE, knightFile1).piece = createPiece(PieceTypes.KNIGHT, Colors.WHITE);
     getSquare(Ranks.ONE, knightFile2).piece = createPiece(PieceTypes.KNIGHT, Colors.WHITE);
     getSquare(Ranks.ONE, bishopFile1).piece = createPiece(PieceTypes.BISHOP, Colors.WHITE);
@@ -283,6 +266,11 @@ function initialize(){
         }
         getSquare(Ranks.EIGHT, file).piece = createPiece(rank1Piece.type, Colors.BLACK);
     }
+
+    backEnd.colorToMove = Colors.WHITE;
+    backEnd.enPassantSquare = null;
+    backEnd.kingsideRookFile = kingsideRookFile;
+    backEnd.queensideRookFile = queensideRookFile;
 }
 
-export {initialize, getSquare, getColorToMove, getPiece, isPiecePresent, getPseudoLegalMoves }
+export {backEnd, getSquare, getColorToMove, getPiece, isPiecePresent, getPseudoLegalMoves }

@@ -57,4 +57,12 @@ type Square = OnBoardSquare | OffBoardSquare
 
 const OFF_BOARD_SQUARE: OffBoardSquare = {isOnBoard: false};
 
-export {Files, Ranks, PieceTypes, Colors, Piece, OnBoardSquare, OFF_BOARD_SQUARE, Square};
+function createPiece(type: PieceTypes, color: Colors): Piece{
+    return {
+        type: type,
+        color: color,
+        hasMoved: false
+    };
+}
+
+export {Files, Ranks, PieceTypes, Colors, Piece, OnBoardSquare, OFF_BOARD_SQUARE, Square, createPiece};
