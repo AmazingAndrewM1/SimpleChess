@@ -46,7 +46,7 @@ interface OnBoardSquare{
     readonly isOnBoard: true,
     piece: Piece | null,
     rank: Ranks,
-    file: Files,
+    file: Files
 }
 
 interface OffBoardSquare{
@@ -65,4 +65,12 @@ function createPiece(type: PieceTypes, color: Colors): Piece{
     };
 }
 
-export {Files, Ranks, PieceTypes, Colors, Piece, OnBoardSquare, OFF_BOARD_SQUARE, Square, createPiece};
+type CastlingSquares = {
+    [color in Colors]: {
+        king: OnBoardSquare,
+        kingsideRook: OnBoardSquare | null,
+        queensideRook: OnBoardSquare | null
+    }
+};
+
+export {Files, Ranks, PieceTypes, Colors, Piece, OnBoardSquare, OFF_BOARD_SQUARE, Square, createPiece, CastlingSquares};

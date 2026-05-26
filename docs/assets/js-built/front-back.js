@@ -1,4 +1,5 @@
 import { initializeHTML } from "./front-end.js";
-import { initialize } from "./back-end.js";
-initialize();
+import { BackEnd } from "./back-end.js";
+let backEnd = new BackEnd();
 initializeHTML();
+export { backEnd };

@@ -1,5 +1,5 @@
-import { Ranks, Files, Colors, Piece, PieceTypes, createPiece } from "../ts-script/utils";
-import { backEnd, getSquare } from "../ts-script/back-end";
+import { Ranks, Files, Piece, CastlingSquares, Colors } from "../ts-script/utils";
+import { BackEnd } from "../ts-script/back-end";
 
 type PiecePlacement = {
     rank: Ranks,
@@ -7,27 +7,22 @@ type PiecePlacement = {
     piece: Piece
 }
 
-function placePieces(piecePlacements: PiecePlacement[]){
-    for (const {rank, file, piece} of piecePlacements){
-        getSquare(rank, file).piece = piece;
+class BackEndTester extends BackEnd{
+    public placePieces(piecePlacements: PiecePlacement[]){
+        for (const {rank, file, piece} of piecePlacements){
+            this.getSquare(rank, file).piece = piece;
+        }
+    }
+    public setColorToMove(color: Colors){
+        this.colorToMove = color;
+    }
+
+    public getCastlingSquares(){
+        return this.castlingSquares;
+    }
+    public setCastlingSquares(castlingSquares: CastlingSquares){
+        this.castlingSquares = castlingSquares;
     }
 }
 
-function makeBoard(){
-    let piecePlacements: PiecePlacement[] = [
-        {
-            rank: Ranks.ONE,
-            file: Files.E,
-            piece: createPiece(PieceTypes.KING, Colors.WHITE)
-        },
-        {
-            rank: Ranks.ONE,
-            file: Files.H,
-            piece: createPiece(PieceTypes.ROOK, Colors.WHITE)
-        }
-    ];
-
-    placePieces(piecePlacements);
-}
-
-export { PiecePlacement, makeBoard, placePieces };
+export { PiecePlacement, BackEndTester };

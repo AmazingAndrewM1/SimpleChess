@@ -1,4 +1,4 @@
-import { getColorToMove, getPiece, isPiecePresent, getPseudoLegalMoves } from "./back-end.js";
+import { backEnd } from "./front-back.js";
 const NUM_RANKS = 8;
 const NUM_FILES = 8;
 let frontEnd = null;
@@ -69,7 +69,7 @@ function initializeHTML() {
             let frontEndSquare = document.createElement("div");
             frontEndSquare.classList.add("square");
             frontEndSquare.classList.add(isLight ? "light" : "dark");
-            let piece = getPiece(rank, file);
+            let piece = backEnd.getPiece(rank, file);
             if (piece !== null) {
                 frontEndSquare.appendChild(getPieceElement(piece));
             }
@@ -104,7 +104,7 @@ function initializeHTML() {
     if (turnContainer === null) {
         throw new Error("Turn Container element not found in DOM");
     }
-    turnContainer.className = colorToString(getColorToMove());
+    turnContainer.className = colorToString(backEnd.getColorToMove());
     frontEnd = {
         board: board,
         turnContainer: turnContainer,
@@ -161,10 +161,10 @@ function handleMouseDown(event) {
     let column = clamp(Math.floor(offsetX * NUM_FILES / rect.width), 0, NUM_FILES - 1);
     let rank = getRank(row);
     let file = getFile(column);
-    if (!isPiecePresent(rank, file)) {
+    if (!backEnd.isPiecePresent(rank, file)) {
         return;
     }
-    let moves = getPseudoLegalMoves(rank, file);
+    let moves = backEnd.getPseudoLegalMoves(rank, file);
     console.log(moves);
     // let rect = this.board.getBoundingClientRect();
     // let offsetX = event.clientX - rect.left;

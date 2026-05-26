@@ -1,6 +1,6 @@
 // import {Piece, King, Queen, Rook, Bishop, Knight, Pawn} from "./pieces/piece-module.js";
 import { Files, Ranks, Colors, Piece, PieceTypes } from "./utils";
-import { getSquare, getColorToMove, getPiece, isPiecePresent, getPseudoLegalMoves } from "./back-end";
+import { backEnd } from "./front-back";
 
 const NUM_RANKS = 8;
 const NUM_FILES = 8;
@@ -91,7 +91,7 @@ function initializeHTML(){
             frontEndSquare.classList.add("square");
             frontEndSquare.classList.add(isLight ? "light" : "dark");
 
-            let piece = getPiece(rank, file);
+            let piece = backEnd.getPiece(rank, file);
             if (piece !== null){
                 frontEndSquare.appendChild(getPieceElement(piece));
             }
@@ -132,7 +132,7 @@ function initializeHTML(){
         throw new Error("Turn Container element not found in DOM");
     }
 
-    turnContainer.className = colorToString(getColorToMove());
+    turnContainer.className = colorToString(backEnd.getColorToMove());
 
     frontEnd = {
         board: board,
@@ -199,11 +199,11 @@ function handleMouseDown(event: MouseEvent){
     let rank = getRank(row);
     let file = getFile(column);
 
-    if (!isPiecePresent(rank, file)){
+    if (!backEnd.isPiecePresent(rank, file)){
         return;
     }
 
-    let moves = getPseudoLegalMoves(rank, file);
+    let moves = backEnd.getPseudoLegalMoves(rank, file);
     console.log(moves);
 
     // let rect = this.board.getBoundingClientRect();
