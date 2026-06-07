@@ -109,7 +109,10 @@ class BackEnd{
     public getPawnMoves(fromSquare: OnBoardSquare){
         let moves: OnBoardSquare[] = [];
 
-        const FORWARD_DIRECTION = fromSquare.piece!.color === Colors.WHITE ? PAWN_WHITE_FORWARD_DELTA : PAWN_BLACK_FORWARD_DELTA;
+        const [STARTING_RANK, FORWARD_DIRECTION, CAPTURE_DIRECTIONS] = 
+            fromSquare.piece!.color === Colors.WHITE
+                ? [Ranks.TWO, PAWN_WHITE_FORWARD_DELTA, PAWN_WHITE_CAPTURE_DELTAS]
+                : [Ranks.SEVEN, PAWN_BLACK_FORWARD_DELTA, PAWN_BLACK_CAPTURE_DELTAS];
 
         let forwardSquare = this.getTransposed(fromSquare, FORWARD_DIRECTION) as OnBoardSquare; /* Guaranteed to be OnBoardSquare in this case */
         if (forwardSquare.piece === null){
@@ -117,12 +120,11 @@ class BackEnd{
         }
 
         let forward2Square = this.getTransposed(forwardSquare, FORWARD_DIRECTION);
-        if (fromSquare.piece!.hasMoved === false && forwardSquare.piece === null && (forward2Square as OnBoardSquare).piece === null){
+        if (fromSquare.rank === STARTING_RANK && forwardSquare.piece === null && (forward2Square as OnBoardSquare).piece === null){
             moves.push(forward2Square as OnBoardSquare);
         }
 
-        let directions = fromSquare.piece!.color === Colors.WHITE ? PAWN_WHITE_CAPTURE_DELTAS : PAWN_BLACK_CAPTURE_DELTAS;
-        for (const CAPTURE_DIRECTION of directions){
+        for (const CAPTURE_DIRECTION of CAPTURE_DIRECTIONS){
             let captureSquare = this.getTransposed(fromSquare, CAPTURE_DIRECTION);
             if (captureSquare.isOnBoard && captureSquare.piece !== null && captureSquare.piece.color !== fromSquare.piece!.color){
                 moves.push(captureSquare);

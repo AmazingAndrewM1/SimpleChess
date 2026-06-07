@@ -6,19 +6,21 @@ class BackEnd {
     board;
     colorToMove;
     enPassantSquare;
-    castlingPermissions;
+    castlingSquares;
     constructor() {
         this.board = this.makeEmptyBoard();
         this.colorToMove = 0 /* Colors.WHITE */;
         this.enPassantSquare = null;
-        this.castlingPermissions = {
-            0: {
-                kingsideRookSquare: null,
-                queensideRookSquare: null
+        this.castlingSquares = {
+            [0 /* Colors.WHITE */]: {
+                king: this.getSquare(1 /* Ranks.ONE */, 1 /* Files.A */),
+                kingsideRook: null,
+                queensideRook: null
             },
-            1: {
-                kingsideRookSquare: null,
-                queensideRookSquare: null
+            [1 /* Colors.BLACK */]: {
+                king: this.getSquare(8 /* Ranks.EIGHT */, 1 /* Files.A */),
+                kingsideRook: null,
+                queensideRook: null
             }
         };
     }
@@ -87,17 +89,18 @@ class BackEnd {
     }
     getPawnMoves(fromSquare) {
         let moves = [];
-        const FORWARD_DIRECTION = fromSquare.piece.color === 0 /* Colors.WHITE */ ? PAWN_WHITE_FORWARD_DELTA : PAWN_BLACK_FORWARD_DELTA;
+        const [STARTING_RANK, FORWARD_DIRECTION, CAPTURE_DIRECTIONS] = fromSquare.piece.color === 0 /* Colors.WHITE */
+            ? [2 /* Ranks.TWO */, PAWN_WHITE_FORWARD_DELTA, PAWN_WHITE_CAPTURE_DELTAS]
+            : [7 /* Ranks.SEVEN */, PAWN_BLACK_FORWARD_DELTA, PAWN_BLACK_CAPTURE_DELTAS];
         let forwardSquare = this.getTransposed(fromSquare, FORWARD_DIRECTION); /* Guaranteed to be OnBoardSquare in this case */
         if (forwardSquare.piece === null) {
             moves.push(forwardSquare);
         }
         let forward2Square = this.getTransposed(forwardSquare, FORWARD_DIRECTION);
-        if (fromSquare.piece.hasMoved === false && forwardSquare.piece === null && forward2Square.piece === null) {
+        if (fromSquare.rank === STARTING_RANK && forwardSquare.piece === null && forward2Square.piece === null) {
             moves.push(forward2Square);
         }
-        let directions = fromSquare.piece.color === 0 /* Colors.WHITE */ ? PAWN_WHITE_CAPTURE_DELTAS : PAWN_BLACK_CAPTURE_DELTAS;
-        for (const CAPTURE_DIRECTION of directions) {
+        for (const CAPTURE_DIRECTION of CAPTURE_DIRECTIONS) {
             let captureSquare = this.getTransposed(fromSquare, CAPTURE_DIRECTION);
             if (captureSquare.isOnBoard && captureSquare.piece !== null && captureSquare.piece.color !== fromSquare.piece.color) {
                 moves.push(captureSquare);
@@ -109,7 +112,11 @@ class BackEnd {
         return moves;
     }
     canCastle(kingSquare, rookSquare) {
-        if (kingSquare.piece.hasMoved || rookSquare === null || rookSquare.piece === null || rookSquare.piece.hasMoved) {
+        if (kingSquare.piece.hasMoved || rookSquare === null || rookSquare.piece.hasMoved) {
+            return false;
+        }
+        let castlingRank = this.colorToMove === 0 /* Colors.WHITE */ ? 1 /* Ranks.ONE */ : 8 /* Ranks.EIGHT */;
+        if (kingSquare.rank !== castlingRank || rookSquare.rank !== castlingRank) {
             return false;
         }
         let kingDestinationFile = kingSquare.file < rookSquare.file ? 7 /* Files.G */ : 3 /* Files.C */;
@@ -136,10 +143,12 @@ class BackEnd {
     }
     getKingMoves(fromSquare) {
         let moves = this.getLeapingMoves(fromSquare, KING_DELTAS);
-        for (const ROOK_SQUARE of Object.values(this.castlingPermissions[fromSquare.piece.color])) {
-            if (this.canCastle(fromSquare, ROOK_SQUARE)) {
-                moves.push(ROOK_SQUARE);
-            }
+        let castlingSquares = this.castlingSquares[fromSquare.piece.color];
+        if (this.canCastle(fromSquare, castlingSquares.kingsideRook)) {
+            moves.push(castlingSquares.kingsideRook);
+        }
+        if (this.canCastle(fromSquare, castlingSquares.queensideRook)) {
+            moves.push(castlingSquares.queensideRook);
         }
         return moves;
     }
@@ -164,9 +173,6 @@ class BackEnd {
             default:
                 throw new Error("unknown piece type");
         }
-    }
-    setCastlingPermissions(permissions) {
-        this.castlingPermissions = permissions;
     }
 }
 // function initialize(){

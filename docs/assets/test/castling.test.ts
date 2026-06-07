@@ -1,7 +1,6 @@
 /* https://jestjs.io/docs/getting-started */
 
 import {Ranks, Files, PieceTypes, Colors, createPiece, CastlingSquares } from "../ts-script/utils";
-import { BackEnd } from "../ts-script/back-end";
 import { PiecePlacement, BackEndTester } from "./utils";
 import {describe, expect, test, beforeEach} from '@jest/globals';
 
