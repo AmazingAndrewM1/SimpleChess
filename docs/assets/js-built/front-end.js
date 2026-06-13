@@ -69,6 +69,9 @@ function initializeHTML() {
             let frontEndSquare = document.createElement("div");
             frontEndSquare.classList.add("square");
             frontEndSquare.classList.add(isLight ? "light" : "dark");
+            let moveOptionDiv = document.createElement("div");
+            moveOptionDiv.classList.add("move-option-container", "hide");
+            frontEndSquare.appendChild(moveOptionDiv);
             let piece = backEnd.getPiece(rank, file);
             if (piece !== null) {
                 frontEndSquare.appendChild(getPieceElement(piece));
@@ -110,6 +113,8 @@ function initializeHTML() {
         turnContainer: turnContainer,
         rowLabelContainer: rowLabelContainer,
         columnLabelContainer: columnLabelContainer,
+        highlightedSquare: null,
+        moveOptionDivs: [],
         isWhiteOnBottom: true,
         isMouseDown: false,
         isDragging: false,
@@ -140,10 +145,19 @@ function isClickInsideBoard(target) {
     }
     return node === board;
 }
+function getDOMSquare(rank, file) {
+    let frontEnd = getFrontEnd();
+    let row = rank - 1 /* Ranks.ONE */;
+    if (frontEnd.isWhiteOnBottom) {
+        row = NUM_RANKS - row - 1;
+    }
+    let column = file - 1 /* Files.A */;
+    return frontEnd.board.children[row * NUM_FILES + column];
+}
 function handleMouseDown(event) {
     event.preventDefault();
     const target = event.target;
-    if (target === null || !(target instanceof Element) || !isClickInsideBoard(target)) {
+    if (!(target instanceof HTMLElement) || !isClickInsideBoard(target)) {
         return;
     }
     // let frontEnd = getFrontEnd();
@@ -153,7 +167,8 @@ function handleMouseDown(event) {
     //     this.hasMadeMove = true;
     //     return;
     // }
-    let board = getFrontEnd().board;
+    let frontEnd = getFrontEnd();
+    let board = frontEnd.board;
     let rect = board.getBoundingClientRect();
     let offsetX = event.clientX - rect.left;
     let offsetY = event.clientY - rect.top;
@@ -161,11 +176,23 @@ function handleMouseDown(event) {
     let column = clamp(Math.floor(offsetX * NUM_FILES / rect.width), 0, NUM_FILES - 1);
     let rank = getRank(row);
     let file = getFile(column);
-    if (!backEnd.isPiecePresent(rank, file)) {
-        return;
+    // let moves = backEnd.getPseudoLegalMoves(rank, file);
+    // console.log(moves);
+    if (frontEnd.highlightedSquare !== null) {
+        frontEnd.highlightedSquare.classList.remove("highlighted");
     }
-    let moves = backEnd.getPseudoLegalMoves(rank, file);
-    console.log(moves);
+    frontEnd.highlightedSquare = getDOMSquare(rank, file);
+    frontEnd.highlightedSquare.classList.add("highlighted");
+    while (frontEnd.moveOptionDivs.length > 0) {
+        const MOVE_OPTION_DIV = frontEnd.moveOptionDivs.pop();
+        MOVE_OPTION_DIV.classList.replace("show", "hide");
+    }
+    for (const BACK_END_SQUARE of backEnd.getPseudoLegalMoves(rank, file)) {
+        const FRONT_END_SQUARE = getDOMSquare(BACK_END_SQUARE.rank, BACK_END_SQUARE.file);
+        let moveOptionDiv = FRONT_END_SQUARE.getElementsByClassName("move-option-container")[0];
+        moveOptionDiv.classList.replace("hide", "show");
+        frontEnd.moveOptionDivs.push(moveOptionDiv);
+    }
     // let rect = this.board.getBoundingClientRect();
     // let offsetX = event.clientX - rect.left;
     // let offsetY = event.clientY - rect.top;

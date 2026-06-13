@@ -1,4 +1,4 @@
-import { OFF_BOARD_SQUARE } from "./utils.js";
+import { OFF_BOARD_SQUARE, createPiece } from "./utils.js";
 import { PAWN_WHITE_CAPTURE_DELTAS, PAWN_BLACK_CAPTURE_DELTAS, PAWN_WHITE_FORWARD_DELTA, PAWN_BLACK_FORWARD_DELTA, KNIGHT_DELTAS, BISHOP_DELTAS, ROOK_DELTAS, QUEEN_DELTAS, KING_DELTAS } from "./piece-deltas.js";
 class BackEnd {
     static NUM_ROWS = 12;
@@ -23,6 +23,7 @@ class BackEnd {
                 queensideRook: null
             }
         };
+        this.initializeNewGame();
     }
     makeEmptyBoard() {
         let board = new Array(BackEnd.NUM_ROWS * BackEnd.NUM_COLUMNS);
@@ -38,6 +39,70 @@ class BackEnd {
             }
         }
         return board;
+    }
+    initializeNewGame() {
+        const NUM_FILES = 8;
+        // Ensure bishops are on opposite colors
+        let bishopFile1 = 2 * Math.floor(NUM_FILES / 2 * Math.random()) + 1;
+        let bishopFile2 = 2 * Math.floor(NUM_FILES / 2 * Math.random()) + 2;
+        let fileOptions = [];
+        for (let file = 1 /* Files.A */; file <= 8 /* Files.H */; ++file) {
+            if (file !== bishopFile1 && file !== bishopFile2) {
+                fileOptions.push(file);
+            }
+        }
+        // Shuffle with Fisher-Yates algorithm
+        for (let i = 0; i < fileOptions.length - 1; ++i) {
+            let swapIndex = Math.floor(Math.random() * (fileOptions.length - i)) + i;
+            let temp = fileOptions[i];
+            fileOptions[i] = fileOptions[swapIndex];
+            fileOptions[swapIndex] = temp;
+        }
+        let [knightFile1, knightFile2, queenFile, rookFile1, rookFile2, kingFile] = fileOptions;
+        // Ensure king is in between rooks
+        if (kingFile < rookFile1 === rookFile1 < rookFile2) {
+            let temp = kingFile;
+            kingFile = rookFile1;
+            rookFile1 = temp;
+        }
+        else if (kingFile < rookFile2 === rookFile2 < rookFile1) {
+            let temp = kingFile;
+            kingFile = rookFile2;
+            rookFile2 = temp;
+        }
+        this.getSquare(1 /* Ranks.ONE */, knightFile1).piece = createPiece(1 /* PieceTypes.KNIGHT */, 0 /* Colors.WHITE */);
+        this.getSquare(1 /* Ranks.ONE */, knightFile2).piece = createPiece(1 /* PieceTypes.KNIGHT */, 0 /* Colors.WHITE */);
+        this.getSquare(1 /* Ranks.ONE */, bishopFile1).piece = createPiece(2 /* PieceTypes.BISHOP */, 0 /* Colors.WHITE */);
+        this.getSquare(1 /* Ranks.ONE */, bishopFile2).piece = createPiece(2 /* PieceTypes.BISHOP */, 0 /* Colors.WHITE */);
+        this.getSquare(1 /* Ranks.ONE */, rookFile1).piece = createPiece(3 /* PieceTypes.ROOK */, 0 /* Colors.WHITE */);
+        this.getSquare(1 /* Ranks.ONE */, rookFile2).piece = createPiece(3 /* PieceTypes.ROOK */, 0 /* Colors.WHITE */);
+        this.getSquare(1 /* Ranks.ONE */, queenFile).piece = createPiece(4 /* PieceTypes.QUEEN */, 0 /* Colors.WHITE */);
+        this.getSquare(1 /* Ranks.ONE */, kingFile).piece = createPiece(5 /* PieceTypes.KING */, 0 /* Colors.WHITE */);
+        for (let file = 1 /* Files.A */; file <= 8 /* Files.H */; ++file) {
+            this.getSquare(2 /* Ranks.TWO */, file).piece = createPiece(0 /* PieceTypes.PAWN */, 0 /* Colors.WHITE */);
+            this.getSquare(7 /* Ranks.SEVEN */, file).piece = createPiece(0 /* PieceTypes.PAWN */, 1 /* Colors.BLACK */);
+            let rank1Piece = this.getSquare(1 /* Ranks.ONE */, file).piece;
+            if (rank1Piece === null) {
+                throw new Error("Rank1 Piece not yet initialized");
+            }
+            this.getSquare(8 /* Ranks.EIGHT */, file).piece = createPiece(rank1Piece.type, 1 /* Colors.BLACK */);
+        }
+        this.colorToMove = 0 /* Colors.WHITE */;
+        this.enPassantSquare = null;
+        let kingsideRookFile = kingFile < rookFile1 ? rookFile1 : rookFile2;
+        let queensideRookFile = rookFile1 < kingFile ? rookFile1 : rookFile2;
+        this.castlingSquares = {
+            [0 /* Colors.WHITE */]: {
+                king: this.getSquare(1 /* Ranks.ONE */, kingFile),
+                kingsideRook: this.getSquare(1 /* Ranks.ONE */, kingsideRookFile),
+                queensideRook: this.getSquare(1 /* Ranks.ONE */, queensideRookFile)
+            },
+            [1 /* Colors.BLACK */]: {
+                king: this.getSquare(8 /* Ranks.EIGHT */, kingFile),
+                kingsideRook: this.getSquare(8 /* Ranks.EIGHT */, kingsideRookFile),
+                queensideRook: this.getSquare(8 /* Ranks.EIGHT */, queensideRookFile)
+            }
+        };
     }
     getIndex(rank, file) {
         let rankOffset = rank - 1 /* Ranks.ONE */;
